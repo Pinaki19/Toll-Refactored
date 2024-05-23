@@ -1,0 +1,215 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    flex-direction: column;
+    margin: 0;
+}
+
+h2 {
+    font-family: Helvetica;
+    font-size: 24px;
+    margin-top: 20px;
+    padding-top: 10px;
+    color: #333;
+    opacity: 0;
+    animation: title .6s ease-in-out;
+    animation-fill-mode: forwards;
+    animation-delay: 1.8s;
+    /* Delay the text animation after the tick animation */
+}
+#Payment_id{
+    font-family: Helvetica;
+    font-size: 18px;
+    color: #333;
+        opacity: 0;
+        animation: title .6s ease-in-out;
+        animation-fill-mode: forwards;
+        animation-delay: 1.8s;
+}
+#Query_text{
+    font-family: Helvetica;
+        font-size: 15px;
+        color: #333;
+        opacity: 0;
+        animation: title .6s ease-in-out;
+        animation-fill-mode: forwards;
+        animation-delay: 1.8s;
+        
+}
+
+.circle {
+    stroke-dasharray: 746;
+    stroke-dashoffset: 746;
+    animation: circle 1s ease-in-out;
+    animation-fill-mode: forwards;
+    justify-content: center;
+    align-items: center;
+}
+
+.tick {
+    stroke-dasharray: 175;
+    stroke-dashoffset: 175;
+    animation: tick .8s ease-out;
+    animation-fill-mode: forwards;
+    animation-delay: 1s;
+}
+
+@keyframes circle {
+    from {
+        stroke-dashoffset: 746;
+    }
+
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes tick {
+    from {
+        stroke-dashoffset: 175;
+    }
+
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes title {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+.loader {
+    margin-top:30px;
+    animation: rotate 1s infinite;
+    height: 50px;
+    width: 50px;
+    justify-content: center;
+    justify-items: center;
+    align-self:center;
+}
+
+.loader:before,
+.loader:after {
+    border-radius: 50%;
+    content: '';
+    display: block;
+    height: 20px;
+    width: 20px;
+}
+
+.loader:before {
+    animation: ball1 1s infinite;
+    background-color: #cb2025;
+    box-shadow: 30px 0 0 #f8b334;
+    margin-bottom: 10px;
+}
+
+.loader:after {
+    animation: ball2 1s infinite;
+    background-color: #00a096;
+    box-shadow: 30px 0 0 #97bf0d;
+}
+
+@keyframes rotate {
+    0% {
+        -webkit-transform: rotate(0deg) scale(0.8);
+        -moz-transform: rotate(0deg) scale(0.8);
+    }
+
+    50% {
+        -webkit-transform: rotate(360deg) scale(1.2);
+        -moz-transform: rotate(360deg) scale(1.2);
+    }
+
+    100% {
+        -webkit-transform: rotate(720deg) scale(0.8);
+        -moz-transform: rotate(720deg) scale(0.8);
+    }
+}
+
+@keyframes ball1 {
+    0% {
+        box-shadow: 30px 0 0 #f8b334;
+    }
+
+    50% {
+        box-shadow: 0 0 0 #f8b334;
+        margin-bottom: 0;
+        -webkit-transform: translate(15px, 15px);
+        -moz-transform: translate(15px, 15px);
+    }
+
+    100% {
+        box-shadow: 30px 0 0 #f8b334;
+        margin-bottom: 10px;
+    }
+}
+
+@keyframes ball2 {
+    0% {
+        box-shadow: 30px 0 0 #97bf0d;
+
+    }
+}
+
+#Payment_body h5, #Payment_body p{
+    padding-top: 10px;
+    align-content: center;
+    justify-content: center;
+    text-align: center;
+}
+
+svg{
+    align-self: center;
+}
+
+#successContent p{
+    padding-top: 10px;
+}
+
+#Query_text p{
+    padding: 0;
+    margin-bottom: 5px;
+}
+
+/* Add failure content styles */
+#failureContent {
+    text-align: center;
+    display: none;
+}
+
+/* Styles for the failure cross (X) icon */
+#failureContent svg {
+    align-self: center;
+    margin-bottom: 20px;
+}
+
+/* Styles for the failure message */
+#failureContent h2 {
+    font-family: Helvetica;
+    font-size: 24px;
+    margin-top: 20px;
+    padding-top: 10px;
+    color: #FF0000;
+    opacity: 0;
+    animation: title .6s ease-in-out;
+    animation-fill-mode: forwards;
+    animation-delay: 1.8s;
+}
+
+#Reason p {
+    font-family: Helvetica;
+    font-size: 18px;
+    color: #522609;
+    opacity: 0;
+    animation: title .6s ease-in-out;
+    animation-fill-mode: forwards;
+    animation-delay: 1.8s;
+}

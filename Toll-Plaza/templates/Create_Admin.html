@@ -1,0 +1,72 @@
+<ul id="CreateAdmin" style="list-style-type: disc; padding: 0;">
+
+    <!-- Your existing code -->
+    {% set ns = namespace(found=false, active=true) %}
+    {% if users|length == 0 %}
+    <div class="alert alert-info" role="alert" style="font-weight: 500; text-align: center;">
+        No Users Found
+    </div>
+    {% endif %}
+    {% for user in users %}
+    {% if not user.Suspended %}
+    {% if ns.active %}
+    {% set ns.active = false %}
+    <li style="display: flex; justify-content: space-between; padding-bottom: 8px; font-weight: 500; margin-bottom: 8px;">
+        <div style="padding-left: .5em;">Admin</div>
+        <div style="min-width:27%;padding-left:1.5em;">Name</div>
+        <div style="min-width:45%;padding-left:2em;">Email</div>
+        <div style="min-width:10%">Suspend</div>
+    </li>
+    <hr style="margin: 0; padding: 0; margin-bottom: 7px;">
+    {% endif %}
+    <li style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 8px;">
+        <div style="min-width:7%;text-align:center;">
+            <input class="form-check-input admin-checkbox" type="checkbox" data-email="{{user.Email}}">
+        </div>
+        <div style="min-width:27%">
+            <span style="font-weight: 500;">{{user.Name}}</span>
+        </div>
+        <div style="min-width:45%">
+            <span style="color: blue;" id="Emailid">{{user.Email}}</span>
+        </div>
+        <div style="min-width:10%;text-align:center;">
+            <input type="checkbox" class="form-check-input suspend-checkbox" data-email="{{user.Email}}" autocomplete="off">
+        </div>
+    </li>
+    <hr style="margin: 0; padding: 0; margin-top: 7px; margin-bottom: 4px;">
+    {% else %}
+    {% set ns.found = true %}
+    {% endif %}
+    {% endfor %}
+    {% if users|length != 0 and ns.found %}
+
+    <div style="padding: 2em; padding-bottom: 0; text-align: center;">
+        <p>Banned Accounts</p>
+    </div>
+    <li style="display: flex; justify-content: space-around; padding-bottom: 8px; font-weight: 500; margin-bottom: 8px;">
+        <div style="min-width:15%"></div>
+        <div style="min-width:30%">Name</div>
+        <div style="min-width:45%;">Email</div>
+        <div style="min-width:10%">Activate</div>
+    </li>
+    <hr style="margin: 0; padding: 0; margin-top: 7px; margin-bottom: 4px;">
+    {% endif %}
+    {% for user in users %}
+    {% if user.Suspended %}
+    <li style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 8px;">
+        <div style="min-width:30%;padding-left:2.5em">
+            <span style="font-weight: 500;">{{user.Name}}</span>
+        </div>
+        <div style="min-width:60%;padding-left:2em">
+            <span style="color: #f5ad42;" id="Emailid">{{user.Email}}</span>
+        </div>
+        <div style="min-width:10%;padding-left:2em">
+            <input type="checkbox" class="form-check-input activate-checkbox" data-email="{{user.Email}}" autocomplete="off">
+        </div>
+    </li>
+    <hr style="margin: 0; padding: 0; margin-top: 7px; margin-bottom: 4px;">
+    {% endif %}
+    {% endfor %}
+
+</ul>
+

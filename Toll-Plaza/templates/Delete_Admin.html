@@ -1,0 +1,31 @@
+<ul id="DeleteAdmin" style="list-style-type: disc; padding:0;">
+    {% if users|length!=0 %}
+    <li style="display: flex; justify-content: space-around; align-items: center;padding-bottom:15px;font-weight:bold;">
+
+        <div style="min-width:30%;text-align:center;">Name</div>
+        <div style="min-width:50%;text-align:center;">Email</div>
+    </li>
+    {% endif %}
+    {% if users|length==0 %}
+  
+        <div class="alert alert-info" role="alert" style="font-weight:500;text-align:center;">
+                No Admins to show
+            </div>
+
+    {% endif %}
+    {% for user in users %}
+    <li style="display: flex; justify-content: space-around; align-items: center;">
+        <div style="min-width:10%">
+            <input class="form-check-input" type="checkbox" >
+        </div>
+        <div style="min-width:30%">
+            <span style="font-weight:500;">{{user.Name}}</span>
+        </div>
+        <div style="min-width:50%">
+            <span style="color:red;" id="Emailid">{{user.Email}}</span>
+        </div>
+        
+    </li>
+    <hr style="margin:0;padding:0;margin-top:7px;margin-bottom:4px;">
+    {% endfor %}
+</ul>

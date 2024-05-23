@@ -1,0 +1,253 @@
+#signupModal{
+
+    .form-control,
+        .form-control:focus,
+        .input-group-addon {
+            border-color: #e1e1e100;
+            border-radius: 5px;
+        }
+    
+        .form-control,
+        .btn {
+           
+            border-radius: 8px;
+        }
+    
+        .modal-content {
+            padding: 0px;
+            margin: 0px;
+            border-radius: 10px !important;
+        }
+        
+    
+        #form #eye1,
+        #Right_wrong {
+            position: absolute;
+            top: -4px;
+            font-size: 16px;
+            bottom: 25px;
+            right: 24px;
+            height: 4px !important;
+            width: 4px !important;
+            color: black;
+            z-index: 100;
+        }
+    
+    
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            border-radius: 10px !important;
+    
+        }
+    
+    
+        .modal-body form {
+            display: flex;
+            flex-direction: column;
+            color: #ffffff;
+            border-radius: 10px;
+            background: #1a1717e2;
+            background-blend-mode: hue;
+            box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+    
+        }
+    
+        .modal-body h3 {
+            color: #eb8211;
+            font-weight: bold;
+            margin-top: 0;
+        }
+    
+        .modal-body hr {
+            margin: 0 -30px 20px;
+        }
+    
+        .modal-body .form-group {
+            margin-bottom: 14px;
+        }
+        .modal-body .form-group .input-group {
+            height:98%;
+            min-height: 30px;
+        }
+    
+        .modal-body label {
+            font-weight: normal;
+            font-size: 13px;
+        }
+    
+        .modal-body .form-control {
+            min-height: 30px;
+            height:98%;
+            box-shadow: none !important;
+            border-radius:0px 5px 5px 0px;
+        }
+    
+        .modal-body .input-group-addon {
+            max-width: 42px;
+            height:auto;
+            min-height: 30px;
+            width: 25px;
+            
+            position: relative;
+
+            text-align: center;
+            background-color: #64b4e9;
+            border-radius: 5px 0px 0px 5px;
+        }
+    
+        
+        .modal-body .btn {
+            font-size: 16px;
+            font-weight: bold;
+            background: #19aa8d;
+            border: none;
+            min-width: 140px;
+    
+        }
+    
+        .modal-body .form-group #Sign-up,
+        #Sign_up_btn {
+            text-align: center;
+            display: flexbox;
+            font-style: normal;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+    
+        .modal-body .btn:hover,
+        .modal-body .btn:focus {
+            background: #df9148ec;
+            transform: scale(1.05);
+            outline: none;
+        }
+    
+        .modal-body a {
+            color: #fff;
+            text-decoration: underline;
+        }
+    
+        .modal-body a:hover {
+            text-decoration: none;
+        }
+    
+        .modal-body form a {
+            color: #f97c29fc;
+            text-decoration: none;
+           
+    
+        }
+    
+        .modal-body form a:hover {
+            text-decoration: underline;
+        }
+    
+        .modal-body .fa,
+        .bi {
+            font-size: 16px;
+        }
+        .modal-body .bi {
+           position: relative;
+           top:3px;
+        }
+    
+        
+    
+        .modal-body .bi-gender-ambiguous {
+            padding-right: 5px;
+            font-size: 18px;
+        }
+        .modal-body select{
+            font-size: 14px;
+            font-weight: 400;
+
+        }
+    
+    
+        .fa,
+        .bi {
+            padding-top: 8px;
+            color: #ffffff;
+        }
+    
+        .modal-body .fa-check {
+            color: #535351;
+            left: 9px;
+            top: 7px;
+            font-size: 11px;
+            position: absolute;
+        }
+    
+        .modal-body #form #Login {
+           
+            margin-left: 8px;
+        }
+    
+        #form #Agreement {
+            background-color: #0e0e0e;
+        }
+}
+ 
+.custom-modal-dialog {
+    min-width:40%;
+
+    
+}
+
+
+#scroll-container{
+border: 2px solid black;
+border-radius: 5px;
+overflow: hidden;
+min-width:30%px;
+width:60%px;
+}
+
+#ShowCupons {
+    text-align: right;
+
+    /* animation properties */
+    -moz-transform: translateX(-100%);
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+
+    -moz-animation: my-animation 12s linear infinite;
+    -webkit-animation: my-animation 12s linear infinite;
+    animation: my-animation 12s linear infinite;
+}
+
+/* for Firefox */
+@-moz-keyframes my-animation {
+    from {
+        -moz-transform: translateX(-100%);
+    }
+
+    to {
+        -moz-transform: translateX(100%);
+    }
+}
+
+/* for Chrome */
+@-webkit-keyframes my-animation {
+    from {
+        -webkit-transform: translateX(-100%);
+    }
+
+    to {
+        -webkit-transform: translateX(100%);
+    }
+}
+
+@keyframes my-animation {
+    from {
+        -moz-transform: translateX(-100%);
+        -webkit-transform: translateX(-100%);
+        transform: translateX(-100%);
+    }
+
+    to {
+        -moz-transform: translateX(100%);
+        -webkit-transform: translateX(100%);
+        transform: translateX(100%);
+    }
+}

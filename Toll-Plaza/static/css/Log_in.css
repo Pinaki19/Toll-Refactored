@@ -1,0 +1,84 @@
+#loginModal{
+    margin-top: 70px;
+    .modal-body,.modal-content{
+        padding-top: 8px;;
+        padding-bottom: 8px;;
+        display: flex;
+        flex-direction: column;
+        
+        width:max-content;
+    }
+
+    .modal-body{
+        padding: 5px;
+    }
+
+    .card-body{
+        background-color: rgb(241, 235, 226);
+        border:2px solid black;
+        display: flex;
+        flex-direction: column;
+        padding: 20px 20px 20px 20px;
+        width:max-content;
+    }
+
+        
+
+    #eye2,
+        #Right_wrong {
+            position: absolute;
+            top: 10px;
+            bottom: 5px;
+            right: 12px;
+            height: 8px;
+            width: 8px;
+            color: black;
+            z-index: 100;
+        }
+    
+        .form-outline {
+            border-bottom: 2px solid rgb(14, 15, 14);
+        }
+    
+        .form-outline label {
+            transform: translateY(-50%);
+            transition: .5s ease;
+            pointer-events: none;
+        }
+    
+        .form-outline input:focus~label,
+        .form-outline input:valid~label {
+            top: -10px;
+        }
+    
+        .gradient-custom-2 {
+            /* fallback for old browsers */
+            background: #fccb90;
+    
+            /* Chrome 10-25, Safari 5.1-6 */
+            background: -webkit-linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
+    
+            /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+            background: linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
+        }
+    
+        #Box {
+            width: 200px;
+            background-color: #fffefead;
+        }
+    
+        #login:hover,
+        #Create:hover {
+            color: blue;
+        }
+    
+        #Create {
+            background: linear-gradient(to right, #ffffff, #f3f0c5, #faf9a1, #fdf36a);
+        }
+    
+    
+        #Forgot_Pass {
+            color: rgb(39, 2, 247);
+        }
+}
+

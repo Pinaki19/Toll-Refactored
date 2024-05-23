@@ -1,0 +1,27 @@
+.suggestions {
+    position: absolute;
+    top: 100%;
+    /* Position suggestions below the input */
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    /* Set the background color */
+    border: 1px solid #ccc;
+    /* Add a border for styling */
+    display: none;
+    /* Hide the suggestions by default */
+    z-index: 1;
+    /* Ensure suggestions appear above other content */
+}
+
+.suggestion {
+    padding: 5px 10px;
+    cursor: pointer;
+    /* Add any other styling you desire for suggestions */
+}
+
+footer{
+    position:relative;
+    width:100%;
+    top:3.5em;
+}

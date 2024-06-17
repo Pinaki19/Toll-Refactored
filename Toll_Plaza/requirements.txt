@@ -1,4 +1,7 @@
 Flask==3.0.0
+supabase
+boto3
+flask_sqlalchemy
 gunicorn
 flask-pymongo==2.2.0  # Use the appropriate version of Flask-PyMongo
 pyrebase4  # Use the appropriate version of Pyrebase

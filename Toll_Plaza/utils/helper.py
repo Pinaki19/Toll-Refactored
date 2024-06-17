@@ -1,7 +1,7 @@
 from flask import session
 from random import randint
-from DB_funcs.helper import get_user,get_cupon_rates,get_gst_rate,get_rate_chart
-from DB_funcs.helper import get_global_discount_rate
+from DB_utils.helper import *
+from DB_utils.helper import *
 
 def check_user():
     if 'email' not in session:

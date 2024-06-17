@@ -14,51 +14,12 @@ from PIL import Image
 from utils.helper import *
 from DB_utils.helper import *
 from Auth.helper import *
-
 IST = timezone('Asia/Kolkata')
+from __init__ import create_app,db
 
-app = Flask(__name__)
-database_name = "Users"
-
-
-mongo_uri_temp = os.environ.get('MONGO_URI')
-
-# Construct the actual MongoDB URI with the specified database name
-mongo_uri = mongo_uri_temp.format(database_name=database_name)
-
-# Initialize PyMongo with the constructed URI
-mongo = PyMongo(app, uri=mongo_uri)
-db = mongo.db
-
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
-
-app.config["SESSION_TYPE"] = "mongodb"
-
-# Set the MongoDB connection details for sessions
-app.config["SESSION_MONGODB"] = pymongo.MongoClient(
-   host=os.environ.get('HOST')
-)
-
-app.config["SESSION_MONGODB_DB"] = "UserSessions"
-app.config["SESSION_MONGODB_COLLECT"] = "sessions"
-
-class CustomJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, ObjectId):
-            return str(obj)
-        return super().default(obj)
-app.json_encoder = CustomJSONEncoder
-
-Session(app)
+app = create_app()
 
 CORS(app)
-
-
-app.config["MONGO_URI_FOR_GRIDFS"] = os.environ.get('GRIDFS')
-
-mongo_for_gridfs = PyMongo(app, uri=app.config["MONGO_URI_FOR_GRIDFS"])
-fs = gridfs.GridFS(mongo_for_gridfs.db)
-
 
 #-------------------------------------------- User Account -------------------------------------------------------
 @app.get('/get_recent_transactions')
@@ -298,7 +259,6 @@ def login():
     password = data.get('Password', '')  # Get the password from the request
     mongo_uri = mongo_uri_temp.format(database_name='Users')
     mongo = PyMongo(app, uri=mongo_uri)
-    # Simplified authentication (replace with your authentication logic)
     user = mongo.db.UserData.find_one({"Email": email})
     if email=="dummy@gmail.com" and password=="123456":
         session['email'] = email
@@ -307,29 +267,12 @@ def login():
         return jsonify({'code': 404, 'message': 'User not Found! Sign Up instead'}), 404
     if (user["Suspended"]):
         return jsonify({'code': 401, 'message': 'User Account is Suspended. Contact Us for more Info.'}), 401
-    try:
-        user = auth.sign_in_with_email_and_password(email, password)
-        # Get user info and check if email is verified
-        user_info = auth.get_account_info(user['idToken'])
-        email_verified = user_info["users"][0]["emailVerified"]
-        if email_verified:
-            session['email']=email
-            return jsonify({'code': 200, 'message': 'Login Success'}), 200
-        else:
-            #print("Email is not verified. Requesting a new ID token...")
-            #new_id_token = user['idToken']
-            return jsonify({'code': 405, 'message':'User Email not verified!'}), 405
-
-    except Exception as e:
-        error_message = str(e)
-        # Find the start and end positions of the 'error' object
-        start_idx = error_message.find('{')
-        error_object = error_message[start_idx:]
-        error = json.loads(error_object)
-        error=error['error']
-        error_message = ' '.join(error.get('message', 'Undefined').split('_'))
-        return jsonify({'code': error.get('code', '400'), 'message':error_message}),  error.get('code', 400)
-
+    result,message,code=sign_in_with_mail(email,password)
+    if result:
+        session['email']=email
+    
+    return jsonify(message), code
+    
 
 @app.route('/sign_up', methods=['POST'])
 def sign_up():
@@ -350,8 +293,7 @@ def sign_up():
         response_data = {
             'message': 'User registration successful. Email verification sent.',
         }
-        
-        if(res)
+        if(res):
             return jsonify(response_data), 200
 
     except Exception as e:
@@ -445,11 +387,8 @@ def check_login():
    
 @app.route('/get_toll_rate')
 def get_rate():
-    mongo_uri = mongo_uri_temp.format(database_name='Toll_Rate')
-    mongo2 = PyMongo(app, uri=mongo_uri)
-    db=mongo2.db
-    object_id = ObjectId("6510916ca24f1f9870537d5f")
-    return jsonify(db.Rate.find_one({"_id": object_id},{"_id":False}))
+    toll_rates=fetch_toll_rates()
+    return jsonify(toll_rates)
 
 @app.get('/verify_user')
 def verify():
@@ -805,7 +744,7 @@ def get_users():
     user=db.UserData.find_one({'Email':session.get('email')})
     if not user['IsSuperAdmin']:
         return jsonify({'message':'Unauthorized Access!!'}),401
-    users = l())
+    users ={} #TODO
     return render_template('Create_Admin.html',users=users)
 
 
@@ -1194,6 +1133,5 @@ def get_user(id):
     return jsonify(data)
 
 if __name__ == "__main__":
-
-    app.run(port=8080)
+    app.run(port=8000)
 

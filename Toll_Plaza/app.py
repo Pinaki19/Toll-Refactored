@@ -159,7 +159,6 @@ def get_profile_image():
 
 @app.route('/remove_profile_image', methods=['POST'])
 def remove_profile_image():
-    print('in')
     try:
         # Get the user's email from the session or request
         email = session.get('email')
@@ -195,44 +194,24 @@ def change_wallet_pass():
         abort(404)
     try:
         new_PIN=int(new_PIN)
-        email = session.get('email')
+        email = session.get('email','')
     except:
         abort(404)
-    db.UserWallets.update_one({'Email':email},{'$set':{'PIN':new_PIN^(turn_into_num(email)),'Default':False}})
-    return jsonify({'success':True})
+    result=update_wallet_password(email,new_PIN)
+    if result:
+        abort(404)
+    return jsonify({'success':result}),200
 
 
 @app.route('/Edit_account',methods=['POST'])
 def Edit_account():
     received = request.get_json()
     email = received.get('email','').lower()
-    collection=db.UserData
-    if not 'email' in session:
-      abort(404)
-    # Search for the user based on email
-    user = collection.find_one({'Email': email})
-
-    if user:
-        # Update user data
-        new_name = received.get('name')
-        new_mobile = received.get('mobile')
-        new_address = received.get('address')
-        if (len(new_name) < 4 or len(new_name) > 40 or len(new_address)>100 or len(new_mobile)>=15):
-            abort(404)
-
-        update_data = {}
-        if new_name:
-            update_data['Name'] = new_name
-        if new_mobile:
-            update_data['Mobile'] = new_mobile
-
-        update_data['Address'] = new_address
-
-        # Update the user's data
-        collection.update_one({'Email': email}, {'$set': update_data})
-
+    if 'email' not in session or not session.get('user_id',None) or email!=session.get('email',''):
+        abort(404)
+    result=update_user(email,session.get('user_id',None),received)
+    if result:
         return jsonify({'success':True}),200
-
     else:
         abort(404)
 
@@ -252,25 +231,52 @@ def get_data():
   return find_user()
 
 
+
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     email = data.get('email', '').lower()
     password = data.get('Password', '')  # Get the password from the request
-    mongo_uri = mongo_uri_temp.format(database_name='Users')
-    mongo = PyMongo(app, uri=mongo_uri)
-    user = mongo.db.UserData.find_one({"Email": email})
-    if email=="dummy@gmail.com" and password=="123456":
+    # Assuming fetch_user is a function that retrieves the user object based on email
+    user = fetch_user(email)
+    if email == "dummy@gmail.com" and password == "123456":
         session['email'] = email
+        session['user_id']=user.id
+        try:
+            session.modified = True
+            user_session = db.session.query(ExtendedSession).filter(
+                ExtendedSession.session_id==session.sid
+            ).first()
+            if user_session:
+                user_session.user_id = user.id
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print('Error: ',e)
         return jsonify({'code': 200, 'message': 'Login Success'}), 200
-    if (not user):
+
+    if not user:
         return jsonify({'code': 404, 'message': 'User not Found! Sign Up instead'}), 404
-    if (user["Suspended"]):
+
+    if user.suspended:
         return jsonify({'code': 401, 'message': 'User Account is Suspended. Contact Us for more Info.'}), 401
-    result,message,code=sign_in_with_mail(email,password)
+
+    result, message, code = sign_in_with_mail(email, password)
     if result:
-        session['email']=email
-    
+        session['email'] = email
+        session['user_id']=user.id
+        try:
+            session.modified = True
+            user_session = db.session.query(ExtendedSession).filter(
+                ExtendedSession.session_id==session.sid
+            ).first()
+            if user_session:
+                user_session.user_id= user.id
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print('Error: ',e)
+
     return jsonify(message), code
     
 
@@ -281,7 +287,7 @@ def sign_up():
     password = data.get('password')
     username = data.get('name')
     mobile= data.get('mobile','')
-    gender =data.get('gender',)
+    gender =data.get('gender','Others')
     if not (email and password and username and gender):
         return jsonify({'message':'Provide all the Fields!'}), 404
     try:
@@ -336,23 +342,19 @@ def reset_password():
 
 @app.route('/Log_out')
 def Logout():
-  session.pop('email',default=None)
+  delete_session()
   return redirect(url_for('index'))
 
 
 @app.route('/profile', methods=['GET'])
 def profile():
-    #print(session)
     if 'email' in session:
-        # Retrieve the user's email from the session
-        email = session.get('email')
-        user = db.UserData.find_one({"Email": email})
-        wallet = db.UserWallets.find_one(
-        {'Email': session.get('email')}, {'_id': False})
+        user = fetch_user(session.get('email',''),session.get('user_id',None))
+        wallet = user.wallet
         if not user or not wallet:
-            session.pop('email','')
+            delete_session()
             abort(404)
-        if user['Suspended']:
+        if user.suspended:
             return jsonify({'code': 401, 'message': 'User Account is Suspended. Contact Us for more Info.'}), 401
         if user:
             # Render the profile template with user data
@@ -367,23 +369,17 @@ def profile():
 
 @app.route('/Check_login', methods=['GET'])
 def check_login():
-    if 'email' not in session:
-        return jsonify({'message': "Not Found!"}), 404
+    if 'email' not in session or not session.get('user_id',None):
+        return jsonify({'message': "User Not Found!"}), 404
     else:
-        projection = {
-            "_id": 0,          # Exclude _id field
-            "Gender": 0,
-            "Mobile": 0, "Defualt_Profile": 0, "Profile_Url": 0, "Queries": 0, 'Email': 0,
-            "RegistrationDate": 0, "Address": 0, "image_id": 0, "transactions": 0,
-        }
-        user = db.UserData.find_one({"Email": session.get('email')},projection)
+        user=fetch_user(email=session.get('email'),user_id=session.get('user_id',None))
         if(not user):
             abort(404)
-        if user['Suspended']:
-            session.pop('email')
+        if user.suspended:
+            delete_session()
             return jsonify({'code': 401, 'message': 'User Account is Suspended. Contact Us for more Info.'}), 401
         else:
-            return jsonify({'message': session.get('email'),"User":user}), 200
+            return jsonify({'message': session.get('email')}), 200
    
 @app.route('/get_toll_rate')
 def get_rate():
@@ -396,20 +392,9 @@ def verify():
         return jsonify({"message": "Unauthorized Access!!"}), 401
     return 'ok',200
 
-
-@app.route('/discounts')
-def get_discounts():
-    rate = find_global_discount_rate()
-    if(rate>0):
-        return jsonify({'rate':rate})
-    else:
-        abort(404)
-
-
 @app.post('/Apply_coupon')
 def apply_cupon():
     data=request.get_json()
-    print(data)
     cupon=data['cupon'].strip().lower()
     if(len(cupon)>=10 or cupon==''):
         abort(404)
@@ -658,7 +643,6 @@ def update_wallet():
     user_wallet = db.UserWallets.find_one({'Email': email})
     stored_PIN=user_wallet['PIN']
     if(stored_PIN^(turn_into_num(email))!=PIN):
-        print('No match')
         return jsonify({'failure': True,'message':"Wrong wallet PIN"}),400
     if user_wallet:
         Amount = payment_data['Amount']+payment_data['Gst'] - \
@@ -680,59 +664,17 @@ def update_wallet():
 
 @app.get('/get_cupons')
 def get_cupon_names():
-    mongo_uri = mongo_uri_temp.format(database_name='Global_Discounts')
-    mongo3 = PyMongo(app, uri=mongo_uri)
-    db = mongo3.db
-    obj = db.Cupons.find()
-    for item in obj:
-        del item['_id']
-        data=list(item.items())
-        data.sort(key=lambda a:a[0],reverse=True)
-        break
-
+    data=fetch_coupons()
     return jsonify({'success':True,'data':data})
 
 
 @app.get('/load_recent_transactions')
 def load_recent_transactions():
     # Check if the user is logged in and their email is stored in the session
-    if 'email' in session:
-        user_email = session['email']
-        db_users = db
-        # Find the user document by their email
-        user_data = db_users.UserData.find_one({'Email': user_email})
-
-        if user_data and 'transactions' in user_data:
-            # Get the list of transactions from the user's data
-            transactions = user_data['transactions']
-
-            mongo_uri = mongo_uri_temp.format(database_name='PaymentDetails')
-            mongo4 = PyMongo(app, uri=mongo_uri)
-            db_payment = mongo4.db
-
-            # Find the recent 5 transactions based on ReferenceNumber
-            projection = {'_id': 0}
-
-            # Find the recent 5 transactions based on ReferenceNumber
-            recent_transactions = list(
-                db_payment.CompletedPayments.find(
-                    {'ReferenceNumber': {'$in': transactions}},
-                    projection=projection
-                ).limit(30).sort([('ReferenceNumber', -1)])
-            )
-
-            # 5 hours 30 minutes in minutes
-            ist_offset = timedelta(minutes=330)
-
-            # Add the IST offset to each transaction's DateTime field
-            for transaction in recent_transactions:
-                if 'DateTime' in transaction:
-                    transaction['DateTime'] += ist_offset
-
-            # You now have the recent transactions with IST-adjusted DateTime
-            return jsonify({'success': True, 'transactions': recent_transactions})
-        else:
-            return jsonify({'success': False})
+    if session.get('user_id',None):
+        user=fetch_user(session.get('email'),session.get('user_id'))
+        transactions=fetch_recent_transactions(session.get('user_id'))
+        return jsonify({'success': True, 'transactions': transactions})
     else:
         return jsonify({'success': False, 'message': 'User not logged in'})
 #----------------------------------------- super admin------------------------------------------------------------
@@ -1105,7 +1047,30 @@ def mark_visited():
 
 @app.route('/', methods=['GET'])
 def index():
-  return render_template("Home.html")
+    '''
+    user1 = {
+        "email": "pinakibanerjee2001@gmail.com",
+        "name": "Pinaki Banerjee",
+        "pic_url": "https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg",
+        "address": "Bahadurpur, Abhirampur, Purba Burdwan, West Bengal, India",
+        "gender": "male",
+        "mobile": "+91 8900539211",
+        "suspended": False,
+        "default_profile": False,
+        "is_admin": False,
+        "is_super_admin": True,
+    }
+    user2 = {
+        "email": "dummy@gmail.com",
+        "name": "Dummy User",
+        "pic_url": "https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg",
+        "address": "Kolkata, 700098, West Bengal, India",
+        "gender": "female",
+    }
+    store_new_user(user1)
+    store_new_user(user2)
+    '''
+    return render_template("Home.html")
 
 
 @app.get('/favicon.ico')

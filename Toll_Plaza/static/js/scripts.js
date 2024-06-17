@@ -1,34 +1,50 @@
+var jsonData; //Stores the toll rates data
+
 async function getEmail() {
-  let response = await fetch('/Check_login');
-  if (response.ok) {
-    let data = await response.json();
-    return data; 
-  }
-  return null;
+  return new Promise(async (resolve, reject) => {
+    try {
+      let response = await fetch('/Check_login');
+      if (response.ok) {
+        let data = await response.json();
+        resolve(data.message);
+      } else {
+        reject(null);
+      }
+    } catch (error) {
+      reject(null);
+    }
+  });
 }
 
-
 async function check_login(){
-  let data = await getEmail();
-  get_cupons();
-  if (data) {
-    document.getElementById('Login').remove();
-    document.getElementById('Sign_up').remove();
-    document.getElementById('Profile').href = '/profile';
-    document.getElementById('Wallet').href = '/profile';
-    document.getElementById('History').href = '/profile';
-    return true;
-  }
-  else{
-    
-    document.getElementById('Sign_up').innerHTML = "Sign Up";
-    document.getElementById('Login').innerHTML = 'Login';
-    document.getElementById('Profile').addEventListener('click', showLoginModal);
-    document.getElementById('Wallet').addEventListener('click', showLoginModal);
-    document.getElementById('History').addEventListener('click', showLoginModal);
-    return false;
-  }
-  
+  return new Promise (async(resolve,reject)=>{
+    try{
+      let data = await getEmail();
+      if (data) {
+        document.getElementById('Login').remove();
+        document.getElementById('Sign_up').remove();
+        document.getElementById('Profile').href = '/profile';
+        document.getElementById('Wallet').href = '/profile';
+        document.getElementById('History').href = '/profile';
+        resolve(true);
+      }
+      else {
+        document.getElementById('Sign_up').innerHTML = "Sign Up";
+        document.getElementById('Login').innerHTML = 'Login';
+        document.getElementById('Profile').addEventListener('click', showLoginModal);
+        document.getElementById('Wallet').addEventListener('click', showLoginModal);
+        document.getElementById('History').addEventListener('click', showLoginModal);
+        reject(false);
+      }
+    }catch{
+      document.getElementById('Sign_up').innerHTML = "Sign Up";
+      document.getElementById('Login').innerHTML = 'Login';
+      document.getElementById('Profile').addEventListener('click', showLoginModal);
+      document.getElementById('Wallet').addEventListener('click', showLoginModal);
+      document.getElementById('History').addEventListener('click', showLoginModal);
+      reject(false);
+    }
+  });
 }
 
 
@@ -41,7 +57,6 @@ var dict = {
   login:Go_Login,
   help: expandMessagesDropdown,
   logout:Logout,
-  
 };
 
 function suggest() {
@@ -283,7 +298,6 @@ function showPopup(data) {
 }
 
 
-
 function Go_home(){
   location.href='/';
 }
@@ -318,38 +332,6 @@ async function logout() {
   }
 }
 
-// function getFirebaseErrorMessage (code) {
-//   var message = null;
-//   console.log(code);
-//   switch (code) {
-//     case "auth/user-not-found":
-//       message = 'USER NOT FOUND';
-//       break;
-//     case "auth/email-already-in-use":
-//       message = 'EMAIL ALREADY IN USE';
-//       break;
-//     case "auth/internal-error":
-//       message = 'INTERNAL ERROR';
-//       break;
-//     case "auth/invalid-login-credentials":
-//       message = 'INVALID LOGIN CREDENTIALS';
-//       break;
-//     case "auth/invalid-email":
-//       message = 'INVALID EMAIL FORMAT';
-//       break;
-//     case "auth/invalid-password":
-//       message = 'INVALID PASSWORD FORMAT';
-//       break;
-//     case "auth/weak-password":
-//       message = 'Password Too Weak! Use Atleast 6 characters';
-//       break;
-//     default:
-//       message = 'Something Went Wrong! Try Again';
-//       break;
-//   }
-//   return message;
-// }
-
 function validateMobile() {
   var mobileInput = document.getElementById("mobile") || document.getElementById("editMobile");
   var mobileValue = mobileInput.value;
@@ -371,34 +353,129 @@ function validateMobile() {
   return true;
 }
 
-
 function get_cupons() {
   const showCuponsDiv = document.getElementById('ShowCupons');
   fetch('/get_cupons')
     .then(response => response.json())
     .then(data => {
       if (data.data && data.data.length > 0) {
-        const cupons = data.data;
-        
-        // Map the coupon data to formatted strings
-        const formattedCupons = cupons.map(cupon => {
-          const [name, value] = cupon;
-          return `${name.charAt(0).toUpperCase() + name.slice(1)} - ${value}%`;
+        const coupons = data.data;
+        const globalCoupon = coupons.find(coupon => coupon.name.toLowerCase() === 'global');
+        const otherCoupons = coupons.filter(coupon => coupon.name.toLowerCase() !== 'global');
+        if(globalCoupon && globalCoupon.rate){
+          const discountRate = globalCoupon.rate; // Replace with the actual field name
+          document.getElementById("Discounts").innerText = `Discounts applied: ${discountRate} %`;
+
+          for (const vehicleType in jsonData) {
+            const journeyTypes = jsonData[vehicleType];
+            for (const journeyType in journeyTypes) {
+              const originalAmount = journeyTypes[journeyType];
+              const discountedAmount = calculateDiscountedAmount(originalAmount, discountRate);
+              journeyTypes[journeyType] = discountedAmount;
+            }
+          }
+        }
+        // Map the other coupon data to formatted strings
+        const formattedCoupons = otherCoupons.map(coupon => {
+          return `${coupon.name.charAt(0).toUpperCase() + coupon.name.slice(1)} - ${coupon.rate}%`;
         });
 
         // Join the formatted coupon strings with commas and set as text content
-        showCuponsDiv.textContent = 'Coupons available: ' + formattedCupons.join(' | ');
+        showCuponsDiv.textContent = 'Coupons available: ' + formattedCoupons.join(' | ');
       } else {
-        // Handle the case where there are no coupon names
-        showCuponsDiv.textContent ="No coupons available currently..";
-        console.log('No coupons available currently..');
+        // Handle the case where there are no coupons
+        showCuponsDiv.textContent = "No coupons available currently...";
       }
+      populateTable();
     })
     .catch(error => {
       document.getElementById('scroll-container').remove();
       console.error('Error:', error);
+      populateTable();
     });
 }
+
+
+async function fetchTollRate() {
+  try {
+    // Fetch the toll rate
+    const tollResponse = await fetch('/get_toll_rate');
+
+    // Check if the response status is OK (200)
+    if (tollResponse.status === 200) {
+      // Parse the JSON response for toll rates
+      jsonData = await tollResponse.json();
+    } else {
+      // Handle the error or return a default value for toll rates
+      throw new Error('Failed to fetch toll rate data');
+    }
+    get_cupons();
+  } catch (error) {
+    // Handle any errors that occurred during the fetch
+    console.error(error);
+  } 
+}
+
+// Function to calculate the discounted amount
+function calculateDiscountedAmount(originalAmount, discountRate) {
+  // Calculate the discounted amount
+  const discountedAmount = originalAmount - (originalAmount * discountRate / 100);
+  // Round the result to two decimal places and parse it as a float
+  return parseFloat(discountedAmount.toFixed(2));
+}
+
+// Function to format vehicle type names
+function formatVehicleTypeName(name) {
+  if (name.startsWith("axel")) {
+    const parts = name.split("_");
+
+    if (parts.length > 2)
+      return `${parts[1]} to ${parts[2]} Axel`;
+    return `${parts[1]} Axel`
+  } else {
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }
+}
+
+function populateTable() {
+  // Get the table body element
+  const tableBody = document.getElementById("priceTableBody");
+
+  // Convert JSON data into an array of objects
+  const dataArray = [];
+  for (const vehicleType in jsonData) {
+    if (vehicleType !== "_id") {
+      const formattedVehicleType = formatVehicleTypeName(vehicleType);
+      const vehicleData = jsonData[vehicleType];
+      dataArray.push({
+        vehicleType: formattedVehicleType,
+        ...vehicleData,
+      });
+    }
+  }
+
+  // Sort the array by the "single" category in ascending order
+  dataArray.sort((a, b) => a.single - b.single);
+
+  // Iterate through the sorted array and create table rows
+  dataArray.forEach((dataItem) => {
+    const newRow = document.createElement("tr");
+
+    const vehicleTypeCell = document.createElement("td");
+    vehicleTypeCell.textContent = dataItem.vehicleType;
+    newRow.appendChild(vehicleTypeCell);
+
+    // Create separate cells for "single," "return," and "monthly" values
+    ["single", "return", "monthly"].forEach((category) => {
+      const cell = document.createElement("td");
+      cell.textContent = ` ${dataItem[category]}`;
+      newRow.appendChild(cell);
+    });
+
+    tableBody.appendChild(newRow);
+  });
+}
+
 
 function validateForm() {
   var email = document.getElementById('contactemail').value;

@@ -13,3 +13,4 @@ pymongo==4.5.0
 pymongo==4.5.0
 pymongo[srv]
 Pillow
+flask_session

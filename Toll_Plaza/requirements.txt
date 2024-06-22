@@ -1,5 +1,4 @@
-setuptools>=42
-wheel
+python-dotenv
 Flask
 supabase
 boto3

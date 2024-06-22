@@ -1,14 +1,10 @@
 from flask import Flask, jsonify, request, render_template,json, redirect, url_for, session, abort, send_file, send_from_directory
-from flask_pymongo import PyMongo
 from pytz import timezone
 from flask_cors import CORS
 from datetime import datetime, timedelta
 from flask_session import Session
-import gridfs
-from bson import ObjectId
 import json
 import io
-import pymongo
 import os
 from PIL import Image
 from utils.helper import *

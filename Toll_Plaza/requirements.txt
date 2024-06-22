@@ -1,3 +1,5 @@
+setuptools>=42
+wheel
 Flask
 supabase
 boto3
@@ -10,3 +12,4 @@ requests
 Pillow
 flask_session
 dotenv
+

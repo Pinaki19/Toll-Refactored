@@ -49,14 +49,12 @@ document.addEventListener('DOMContentLoaded', function () {
     fetch('/load_recent_transactions')
         .then(response => response.json())
         .then(data => {
-            console.log(data.transactions)
             if (data.success && data.transactions.length > 0) {
                 var recentTransactions = data.transactions.slice(0, 10); // Limit to 5 transactions
                 const listGroup = document.querySelector('.list-group');
                 var alltransactions = data.transactions;
                 const email=data.email;
-                console.log(alltransactions);
-                console.log(recentTransactions)
+
                 // Iterate over the recent transactions and create list items
                 recentTransactions.forEach(transaction => {
                     const listItem = document.createElement('li');
@@ -315,7 +313,7 @@ function Newadmin(){
     document.getElementById('proceedbutton3').style.display='none';
     document.getElementById('EnterPasscode').style.display="block";
     document.getElementById('confirmbutton').style.display='inline-block';
-    document.getElementById("warning").innerHTML = `<div class="alert alert-danger" role="alert" style="font-size:15px;color:black;text-align:left;">
+    document.getElementById("warning").innerHTML = `<div class="alert alert-danger" role="alert" style="font-size:15px;color:black;text-align:center;">
        Anyone selected to become <strong>ADMIN</strong> will now have Admin powers!!<br>
        Any user with Email marked red will be <strong>SUSPENDED</strong>.<br>
        Enter your Passcode below and Confirm.</div>`;
@@ -354,25 +352,6 @@ function reset_modal2() {
 }
 
 
-function reset_modal3() {
-    try {
-        $('#proceedbutton5').prop('disabled', true);
-        $('#ADDnew').prop('disabled',false);
-        document.getElementById('proceedbutton5').style.display = 'inline-block';
-        document.getElementById('confirmbutton5').style.display = 'none';
-        document.getElementById('EnterPasscode5').style.display = "none";
-        document.getElementById("warnDiscountchange").innerHTML = `<div class="alert alert-danger" role="alert" style="color:black;font-weight:500;text-align:center;">
-               The Discount rates will be changed on confirmation.
-    </div > `;
-        document.getElementById('NewCoupon').style.display = 'none';
-        document.getElementById('EnterNewRate').style.display = 'none';
-}catch{
-    null;
-}
-    
-}
-
-
 function change_toll_modal() {
     document.getElementById('proceedbutton4').style.display = 'inline-block';
     document.getElementById('confirmbutton4').style.display = 'none';
@@ -405,9 +384,9 @@ function getSelectedEmails() {
 function getSelectedEmails2() {
     var selectedEmails = [];
     $('#DeleteAdmin input[type="checkbox"]:checked').each(function () {
-        var listItem = $(this).closest('li');
-        var email = listItem.find('span#Emailid').text();
-        selectedEmails.push(email);
+        var row = this.parentElement.parentElement;
+        var emailCell = row.querySelector('.user-email');
+        selectedEmails.push(emailCell.innerText);
     });
 
     return { data: selectedEmails };
@@ -443,14 +422,14 @@ function modify_users() {
         dataType: "json",
         success: function (response) {
             // Handle the success response here
-            document.getElementById("CreateAdmin").dataset = false;
+            document.getElementById("CreateAdmin").dataSet = false;
             //console.log("Admins created successfully:", response);
             var warningElement = document.getElementById("warning");
             warningElement.innerHTML = `<div class="alert alert-success" role="alert" style="color:black;font-weight:500;text-align:center;">
                 ${response.message}
             </div>`;
             //reset_modal();
-            setTimeout(function(){location.reload()},1700);
+            document.getElementById("DeleteAdmin").dataSet = false;
             // Optionally, you can perform additional actions after a successful request.
         },
         error: function (error) {
@@ -493,13 +472,14 @@ function delete_admin() {
         dataType: "json",
         success: function (response) {
             // Handle the success response here
-            document.getElementById("DeleteAdmin").dataset = false;
+            document.getElementById("DeleteAdmin").dataSet = false;
             //console.log("Admins deleted successfully:", response);
             var warningElement = document.getElementById("warning2");
             warningElement.innerHTML = `<div class="alert alert-success" role="alert" style="color:black;font-weight:500;text-align:center;">
                 ${response.message}
             </div>`;
-            setTimeout(function () { location.reload() }, 1700);
+            
+            document.getElementById("CreateAdmin").dataSet = false;
             // Optionally, you can perform additional actions after a successful request.
         },
         error: function (error) {
@@ -536,6 +516,7 @@ function resetToOriginal(dataItem, originalItem) {
 var dataArray=[];
 function populateModalTable(jsonData) {
     // Get the table body element
+    $('#TollTableBody').html('');
     dataArray = [];
     var originalDataArray = JSON.parse(JSON.stringify(jsonData));
     const tableBody = document.getElementById("TollTableBody");
@@ -615,10 +596,6 @@ function change_toll_Rate(){
     if(String(passcode).length!=4){
         return;
     }
-    change_toll_rate(passcode);
-}
-
-function change_toll_rate(passcode) {
     const url = "/update_toll_rate"; 
     const payload = {
         Password: passcode, // Replace with your actual password
@@ -632,12 +609,11 @@ function change_toll_rate(passcode) {
         data: JSON.stringify(payload),
         success: function (data) {
             if (data && data.message) {
-                document.getElementById("TollTableBody").dataset=false;
+                document.getElementById("TollTableBody").dataSet=false;
                 // Update the warningElement with the response message
                 warningElement.innerHTML = `<div class="alert alert-success" role="alert" style="color:black;font-weight:500;text-align:center;">
                 ${data.message}</div>`;
                 console.log(data.message);
-                setTimeout(function () { location.reload() }, 1700);
             } else {
                 console.error("Response does not contain a message.");
             }
@@ -655,12 +631,17 @@ function change_toll_rate(passcode) {
 
 var originalData,currentData;
 function change_Discounts(){
+    const discountsTable = $('#DiscountTableBody');
+    if(discountsTable.dataSet==true){
+        return;
+    }else{
+        discountsTable.dataSet=true;
+    }
     $.ajax({
         url: '/get_cupons',
         type: 'GET',
         dataType: 'json',
         success: function (data) {
-            const discountsTable = $('#DiscountTableBody');
             if (data.success && data.data && data.data.length > 0) {
                 originalData = JSON.parse(JSON.stringify(data.data));
                 currentData = JSON.parse(JSON.stringify(data.data));
@@ -829,6 +810,7 @@ function change_discount_rate(){
     var couponName = document.getElementById('cuponName').value;
     var newcuponRate = document.getElementById('cuponRate').value;
     var Rate = parseInt(globalRate);
+    console.log(Rate);
     var cuponRate=parseInt(newcuponRate);
     if (globalRate.length == 0 || isNaN(Rate) || Rate >= 100 || Rate < 0) {
         Rate = -1;
@@ -859,7 +841,9 @@ function change_discount_rate(){
             //console.log(data.message);
             warningElement.innerHTML = `<div class="alert alert-success" role="alert" style="color:black;font-weight:500;text-align:center;">
                 ${data.message}</div>`;
-            setTimeout(function () { location.reload() }, 1700);
+            const discountsTable = $('#DiscountTableBody');
+            setTimeout(()=>{location.reload()},2000);
+            
         },
         error: function (error) {
             // Handle any errors that occur during the AJAX request

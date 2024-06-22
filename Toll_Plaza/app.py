@@ -26,19 +26,13 @@ CORS(app)
 def format_ist(datetime_str):
     # Parse the datetime string to a datetime object
     utc_time = datetime.fromisoformat(datetime_str)
-    
-    # Define the IST timezone
     ist_timezone = IST
     # Convert the datetime to IST
     ist_time = utc_time.astimezone(ist_timezone)
     # Format the datetime as "DD-MM-YYYY HH:MM:SS"
     formatted_time = ist_time.strftime('%d-%m-%Y %H:%M:%S')
-    
     return formatted_time
 
-# Add the custom filter to Jinja2 environment
-env = Environment()
-env.filters['format_ist'] = format_ist
 app.jinja_env.filters['format_ist'] = format_ist
 #-------------------------------------------- User Account -------------------------------------------------------
 @app.get('/get_recent_transactions')
@@ -66,20 +60,6 @@ def get_recent_transactions():
             
     return render_template('recent_transactions.html', recent_transactions=result[::-1])
 
-
-@app.route('/get_image/<image_id>', methods=['GET'])
-def get_image(image_id):
-    try:
-        # Retrieve the image data from GridFS using the provided image_id
-        image_data = fs.get(ObjectId(image_id))
-
-        response = send_file(io.BytesIO(image_data.read()),mimetype='image/jpeg')
-        return response
-    except Exception as e:
-        
-        return jsonify({"success": False, "message": str(e)})
-
-
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
     if 'image' not in request.files:
@@ -102,8 +82,6 @@ def remove_profile_image():
         return jsonify({"success": True, "message": "Profile picture removed successfully."})
     else:
         return jsonify({"success": False, "message": "No profile picture found for the user."})
-
-
 
 
 @app.post('/Forgot_wallet_pass')
@@ -493,12 +471,9 @@ def load_recent_transactions():
 
 @app.route('/users', methods=['GET'])
 def get_users():
-    if not valid_user():
-        abort(401)
-    user=db.UserData.find_one({'Email':session.get('email')})
-    if not user['IsSuperAdmin']:
+    if not check_user(True):
         return jsonify({'message':'Unauthorized Access!!'}),401
-    users ={} #TODO
+    users =fetch_all_users()
     return render_template('Create_Admin.html',users=users)
 
 
@@ -506,96 +481,42 @@ def get_users():
 def get_admins():
     if not valid_user():
         abort(401)
-    user = db.UserData.find_one({'Email': session.get('email')})
-    if not user['IsSuperAdmin']:
-        return jsonify({'message': 'Unauthorized Access!!'}), 401
-    users = get_admins_from_db()
-    return render_template('Delete_Admin.html', users=users)
+    admins = fetch_admins()
+    return render_template('Delete_Admin.html', users=admins)
 
 
 
 # Define a route to make new admins
 @app.route('/make_admin', methods=['POST'])
 def make_admins():
-    if not valid_user():
-        abort(401)
-    user = db.UserData.find_one({'Email': session.get('email')})
-    if not user['IsSuperAdmin']:
-        abort(401)
+    if not check_user():
+        return jsonify({"message": "Unauthorized Access"}), 401
+   
     data = request.get_json()
     if not data or 'data' not in data or 'Password' not in data:
-        return jsonify({"error": "Invalid JSON data"}), 400
-    email_list = data['data']
-    if len(data['Password']) !=4:
-        return jsonify({'message': "Provide Passcode"}), 400
-    try:
-        password=int(data['Password'])
-    except:
-        return jsonify({'message':"Wrong Passcode"}),401
-
-    object_id = ObjectId("6521104419f8ab8aac121d6e")
-    key= db.SuperAdminKey.find_one({"_id": object_id})['key']
-    if(password!=key):
-        return jsonify({'message': "Wrong Passcode"}), 400
-
-    current_user_data = db.UserData.find_one({'Email': session.get('email')})
-    if not current_user_data or not current_user_data.get("IsSuperAdmin"):
-        return jsonify({"message": "Unauthorized Access"}), 401
-
-    suspend=data.get('suspend')
-    activate=data.get('activate')
-    collection=db.UserData
-    for email in suspend:
-        collection.update_one(
-            {"Email": email.lower()}, {"$set": {"Suspended": True}})
-    for email in activate:
-        collection.update_one(
-            {"Email": email.lower()}, {"$set": {"Suspended": False}})
-    for email in email_list:
-        if email not in suspend:
-            collection.update_one(
-                {"Email": email.lower()}, {"$set": {"IsAdmin": True}})
-
-    return jsonify({"message": "Users updated successfully"})
+        return jsonify({"error": "Invalid data"}), 400
+    result,reason=update_users(data)
+    if result:
+        return jsonify({"message": reason}),200
+    return jsonify({"message": reason}),500
 
 
 # Define a route to delete admin privileges
 @app.route('/delete_admin', methods=['POST'])
 def delete_admin():
-    # Check if the user is authenticated
-    if not valid_user():
-        abort(401)
-    # Check if the user is a super admin
-    user = db.UserData.find_one({'Email': session.get('email')})
-    if not user or not user['IsSuperAdmin']:
-        abort(401)
+    if not check_user():
+        return jsonify({"message": "Unauthorized Access"}), 401
 
     # Get the data from the POST request
     data = request.get_json()
     if not data or 'data' not in data:
         return jsonify({"error": "Invalid JSON data"}), 400
-
-    email_list = data['data']
-    if len(email_list) == 0:
-        return jsonify({'message': "Bad request"}), 400
-    if len(data['Password']) !=4:
-        return jsonify({'message': "Provide Passcode"}), 400
-    try:
-        password=int(data['Password'])
-    except:
-        return jsonify({'message':"Wrong Passcode"}),401
-
-    object_id = ObjectId("6521104419f8ab8aac121d6e")
-    key = db.SuperAdminKey.find_one({"_id": object_id})['key']
-    if (password != key):
-        return jsonify({'message': "Wrong Passcode"}), 400
-    # Update the IsAdmin field for the specified emails to False
-    collection = db.UserData
-    for email in email_list:
-        collection.update_one({"Email": email.lower()}, {
-                              "$set": {"IsAdmin": False}})
-
-    return jsonify({"message": "Admin privileges removed successfully"})
+    
+    result,reason=remove_admin_privilage(data)
+    if result:
+         return jsonify({"message": "Admin privileges removed successfully"})
+    return jsonify({"message": reason}),400
+   
 
 
 #----------------------------------------------------Admin---------------------------------------------------
@@ -643,32 +564,22 @@ def get_queries():
     return jsonify({'queries':queries})
 
 
+
+
+
+#TODO
 @app.route('/resolve_queries', methods=['POST'])
-def resolve_query():
+def resolve_user_queries():
     if not check_user():
         return jsonify({"message": "Unauthorized Access!!"}), 401
-    mongo_uri = mongo_uri_temp.format(database_name='Queries')
-    mongo = PyMongo(app, uri=mongo_uri)
-   
-    db = mongo.db
-    collection = db['User_Queries']
-    try:
-        data = request.get_json()
-        query_id = data.get('queryId')
-        input_text = data.get('inputText')
-
-        # Update the query in the MongoDB collection
-        query = collection.find_one({"_id": ObjectId(query_id)})
-        if query:
-            # Mark the query as resolved
-            collection.update_one({"_id": ObjectId(query_id)}, {
-                                  "$set": {"Pending": False, "Resolved": True, "Resolve_Time": datetime.now(), "Response": input_text}})
-            return jsonify({'message': 'Query resolved successfully!'})
-
+    data=request.get_json()
+    result=resolve_query(data,session.get('user_id'))
+    if result:
+        return jsonify({'message': 'Query resolved successfully!'})
+    else:
         return jsonify({'error': 'Query not found'}, 404)
 
-    except Exception as e:
-        return jsonify({'message': 'Error resolving query', 'details': str(e)}), 500
+
 
 
 @app.route('/get_user_queries', methods=['GET'])
@@ -686,6 +597,7 @@ def get_user_queries():
 
 @app.get('/mark_visited')
 def mark_visited():
+   mark_queries_seen(session.get('user_id'))
    return jsonify({"message": "success"}),200
 
 
@@ -693,14 +605,9 @@ def mark_visited():
 def index():
     return render_template("Home.html")
 
-
-
-
 @app.get('/favicon.ico')
 def favicon():
-    return send_from_directory('./static',
-                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
-    
+    return send_from_directory('./static','favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route('/favicon.png')
 def favicon_png():
@@ -712,13 +619,10 @@ def favicon_png():
 def get_user(id):
     if not check_user():
         return jsonify({"message":"Unauthorized access!!"}),401
-    mongo_uri = mongo_uri_temp.format(database_name='PaymentDetails')
-    mongo = PyMongo(app, uri=mongo_uri)
-    collection = mongo.db.CompletedPayments
-    data = collection.find_one({"_id": ObjectId(id)}, {"_id": False, "expiration_time":False})
+    data=fetch_payment_data(id)
     if not data:
-        return jsonify({"message":"No Records Found!!"})
-    return jsonify(data)
+        return jsonify({"message":"No such Record Found!!"})
+    return jsonify(serialize(data,False))
 
 if __name__ == "__main__":
     app.run(port=8000)

@@ -147,15 +147,10 @@ def update_user_pic_url(url:str='',user_id:uuid=None,unset:bool=False,supabase=N
     
 def fetch_user_queries(email: str, user_id: uuid = None) -> tuple:
     try:
-        user = db.session.query(User).filter_by(
-            id=user_id
-        ).options(joinedload(User.queries)).first()
-        queries = user.queries
-        result=[]
-        for query in queries:
-            if query.solved:
-                result.append(query)
-        return serialize(result) if len(result) else []
+        data=db.session.query(Query).filter(
+            Query.user_id==user_id,Query.solved==True
+        ).order_by(Query.query_time.desc()).all()
+        return serialize(data)
     except Exception as e:
         print(f"An error occurred: {e}")
         return []
@@ -220,7 +215,7 @@ def update_discount_coupons(data:dict)->tuple[bool,str]:
         Newcupon=data.get('NewCupon').lower()
         Newrate = float(data.get('NewRate'))
         Coupons=data.get('discountRate')
-
+        print(data)
         if GlobalDiscount>=0 and GlobalDiscount<100:
             data=db.session.query(Discounts).filter(
                Discounts.name=='global'
@@ -239,6 +234,8 @@ def update_discount_coupons(data:dict)->tuple[bool,str]:
         for coupon in Coupons :
             key=coupon['name']
             value=coupon['rate']
+            if key=='global':
+                continue
             if not key.isalnum():
                 continue
             elif float(value)<=0:
@@ -530,3 +527,96 @@ def store_query(email:str,message:str,user_id:uuid=None)->uuid:
     except Exception as e:
         print(e)
         return None
+
+def fetch_all_users()->list[User]:
+    try:
+        users=db.session.query(User).filter(
+            User.is_admin==False,User.is_super_admin==False
+        ).order_by(User.name.asc()).all()
+        return serialize(users)
+    except:
+        return []
+    
+    
+def update_users(data:dict)->tuple[bool,str]:
+    make_admins=data.get('data',[])
+    suspend=data.get('suspend',[])
+    activate=data.get('activate',[])
+    password=data.get('Password','')
+    result,reason=check_passcode(password)
+    if not result:
+        return result,reason
+    make_admins=[email for email in make_admins if email not in suspend]
+    try:
+        for email in make_admins:
+            user=fetch_user(email.lower())
+            user.is_admin=True
+        for email in activate:
+            user=fetch_user(email.lower())
+            user.suspended=False
+        for email in suspend:
+            user=fetch_user(email.lower())
+            user.suspended=True
+        db.session.commit()
+        return True,"Users modified successfully."
+    except:
+        db.session.rollback()
+        return False,'Invalid data'
+    
+def remove_admin_privilage(data:dict)->tuple[bool,str]:
+    password=data.get('Password','')
+    result,reason=check_passcode(password)
+    if not result:
+        return result,reason
+    email_list = data.get('data',[])
+    try:
+        for email in email_list:
+            user=fetch_user(email.lower())
+            user.is_admin=False
+
+        db.session.commit()
+        return True,'ok'
+    except:
+        db.session.rollback()
+        return False,'Something went wrong! '
+    
+    
+def fetch_admins()->list[User]:
+    try:
+        admins=db.session.query(User).filter(
+            User.is_admin==True,User.is_super_admin==False
+        ).order_by(User.name.asc())\
+        .all()
+        return serialize(admins)
+    except:
+        return []
+
+def resolve_query(data:dict,answer_by:uuid=None)->bool:
+    try:
+        query:Query=db.session.query(Query).filter(
+            Query.query_id==data.get('queryId','')
+        ).first()
+        if query and not query.solved:
+            query.response=data.get('inputText')
+            query.answer_by=answer_by
+            query.solved=True
+            query.solved_on=func.now()
+            query.seen=False
+
+            db.session.commit()
+            return True
+    except:
+        db.session.rollback()
+        return False
+    
+def mark_queries_seen(user_id:uuid=None):
+    try:
+        queries=db.session.query(Query).filter(
+            Query.solved==True,Query.seen==False,Query.user_id==user_id
+        ).all()
+        for query in queries:
+            query.seen=True
+        
+        db.session.commit()
+    except:
+        db.session.rollback()

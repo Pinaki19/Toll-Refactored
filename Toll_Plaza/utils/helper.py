@@ -3,10 +3,12 @@ from random import randint
 from DB_utils.helper import *
 from DB_utils.helper import *
 
-def check_user()->bool:
+def check_user(verify_super_user:bool=False)->bool:
     if 'email' not in session or 'user_id' not in session:
         return False
-    user = fetch_user(email=session.get('email'))
+    user = fetch_user(email=session.get('email'),user_id=session.get('user_id',None))
+    if verify_super_user and not user.is_super_admin:
+        return False
     if not user or not user.is_admin and not user.is_super_admin:
         return False
     return True

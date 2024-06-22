@@ -18,6 +18,7 @@ class DBConfig:
     SUPABASE_URL = os.environ.get('SUPABASE_URL')
     SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
     SUPABASE_STORAGE_BUCKET = 'profile-pics'
+    SERVICE_ROLE_KEY=os.environ.get('SERVICE_ROLE_KEY')
     
    
     

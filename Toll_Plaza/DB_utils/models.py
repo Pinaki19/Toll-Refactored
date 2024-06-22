@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask.sessions import SessionInterface, SessionMixin
 import uuid
 import pickle
+from datetime import datetime, timedelta
 from flask import session
 
 class ExtendedSession(db.Model):
@@ -30,7 +31,7 @@ class ExtendedSession(db.Model):
     
 class User(db.Model):
     __tablename__ = 'users'
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4())
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = db.Column(String(35),nullable=False)
     email = db.Column(String(50),nullable=False, index=True, unique=True)
     pic_url= db.Column(String(255),nullable=False)
@@ -50,8 +51,9 @@ class User(db.Model):
 
 class Query(db.Model):
     __tablename__ = 'queries'
-    query_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4())
+    query_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = db.Column(UUID,db.ForeignKey('users.id'),nullable=True,default=None)
+    email= db.Column(String(50),nullable=False)
     message = db.Column(Text,nullable=False)
     response = db.Column(Text,nullable=True,default=None)
     solved= db.Column(Boolean,default=False)
@@ -108,17 +110,18 @@ class TollRate(db.Model):
     
 class PaymentData(db.Model):
     __tablename__= 'payment_data'
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4())
-    wallet_id = db.Column(UUID,db.ForeignKey('wallets.id'),nullable=True)
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    wallet_id = db.Column(UUID,db.ForeignKey('wallets.id'),nullable=True,default=None)
     amount=db.Column(Double,nullable=False)
     coupon_disc=db.Column(Double,nullable=False)
     global_disc=db.Column(Double,nullable=False)
     gst_applied=db.Column(Double,nullable=False)
-    vehicle_number=db.Column(String(20),nullable=True)
-    type=db.Column(String(30),nullable=False)
-    user_id=db.Column(UUID, db.ForeignKey('users.id'),nullable=True)
+    vehicle_number=db.Column(String(20),nullable=True,default=None)
+    type=db.Column(String(30),nullable=False,default='toll pay')
+    user_id=db.Column(UUID, db.ForeignKey('users.id'),nullable=True,default=None)
     created_at=db.Column(DateTime(timezone=True),default=func.now())
-    expire_time=db.Column(DateTime(timezone=True),nullable=False,default=func.now() + func.text("'5 minutes'"))
+    expire_time=db.Column(DateTime(timezone=True),nullable=False,default=func.now() + timedelta(minutes=5))
+    
     completed = db.Column(Boolean,nullable=False,default=False)
     user=db.relationship('User',back_populates='transactions',uselist=False)
     wallet=db.relationship('Wallet',back_populates='wallet_transactions',foreign_keys=[wallet_id])

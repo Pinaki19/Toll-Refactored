@@ -49,10 +49,14 @@ document.addEventListener('DOMContentLoaded', function () {
     fetch('/load_recent_transactions')
         .then(response => response.json())
         .then(data => {
+            console.log(data.transactions)
             if (data.success && data.transactions.length > 0) {
                 var recentTransactions = data.transactions.slice(0, 10); // Limit to 5 transactions
                 const listGroup = document.querySelector('.list-group');
                 var alltransactions = data.transactions;
+                const email=data.email;
+                console.log(alltransactions);
+                console.log(recentTransactions)
                 // Iterate over the recent transactions and create list items
                 recentTransactions.forEach(transaction => {
                     const listItem = document.createElement('li');
@@ -60,16 +64,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     // Create a div to hold the transaction details
                     const transactionDiv = document.createElement('div');
-                    transactionDiv.textContent = transaction.data.Type;
+                    transactionDiv.textContent = transaction.type;
 
                     // Calculate the value (Amount - GlobalDiscount - Cupons + Gst)
-                    const value = transaction.data.Amount - transaction.data.GlobalDiscount - transaction.data.Cupon + transaction.data.Gst;
+                    const value = transaction.amount - transaction.global_disc - transaction.coupon_disc + transaction.gst_applied;
                     const valueSpan = document.createElement('span');
 
                     const dateTimeDiv = document.createElement('div');
-                    dateTimeDiv.textContent = formatTime(transaction.DateTime);
+                    dateTimeDiv.textContent = formatTime(transaction.expire_time);
                     // Add a plus sign and make it green for "Add Money," otherwise add a negative sign and make it red
-                    if (transaction.data.Type === 'Add Money') {
+                    if (transaction.type === 'add money') {
                         valueSpan.innerHTML = `+ &#8377;${value.toFixed(2)}`; // Format to 2 decimal places
                         valueSpan.style.color = 'green';
                     } else {
@@ -87,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 alltransactions.forEach(transaction => {
                     
-                    fillModalBody(transaction);
+                    fillModalBody(transaction,email);
                     
                 });
             } else {
@@ -148,7 +152,7 @@ async function process_add_money(amount) {
     event.preventDefault();
     
     var data = {
-        Type: "Add Money",
+        Type: "add money",
         Amount: amount
     };
 
@@ -530,12 +534,11 @@ function resetToOriginal(dataItem, originalItem) {
 }
 
 var dataArray=[];
-function populateTable(jsonData) {
+function populateModalTable(jsonData) {
     // Get the table body element
     dataArray = [];
     var originalDataArray = JSON.parse(JSON.stringify(jsonData));
     const tableBody = document.getElementById("TollTableBody");
-  
     for (const vehicleType in jsonData) {
         const vehicleData = jsonData[vehicleType];
         dataArray.push({
@@ -554,7 +557,6 @@ function populateTable(jsonData) {
 
         const vehicleTypeCell = document.createElement("td");
         vehicleTypeCell.textContent = formatVehicleTypeName(dataItem.vehicleType);
-        vehicleTypeCell.style.paddingLeft="15px";
         newRow.appendChild(vehicleTypeCell);
 
         // Create a cell for each rate category
@@ -568,8 +570,9 @@ function populateTable(jsonData) {
             // Create an input element
             const input = document.createElement("input");
             input.type = "number";
-            
+
             input.value = dataItem[category];
+            input.style.width = '2.5em';
             input.className = "form-control"; // You can add Bootstrap classes for styling
             input.min = 1;
             // Create a span to display the original value
@@ -577,7 +580,6 @@ function populateTable(jsonData) {
             originalValueSpan.className = "input-group-text";
             var vehicle = dataItem.vehicleType;
             originalValueSpan.textContent = originalDataArray[vehicle][category];
-
             input.addEventListener("input", (event) => {
                 // Ensure the input is a valid positive number
                 const newValue = parseFloat(event.target.value);
@@ -617,7 +619,7 @@ function change_toll_Rate(){
 }
 
 function change_toll_rate(passcode) {
-    const url = "/update_toll_rate"; // Replace with the actual URL of your Flask endpoint
+    const url = "/update_toll_rate"; 
     const payload = {
         Password: passcode, // Replace with your actual password
         dataArray: dataArray, // The data array you want to update
@@ -664,76 +666,75 @@ function change_Discounts(){
                 currentData = JSON.parse(JSON.stringify(data.data));
                 var delCount = 0;
                 $.each(data.data, function (index, coupon) {
-                    const [couponName, currentRate] = coupon;
-                    const newRow = document.createElement("tr");
-                    newRow.style.justifyContent ="space-around";
-                    const Couponcell = document.createElement("td");
-                    Couponcell.textContent = couponName.toUpperCase();
-                    Couponcell.style.paddingLeft = "3em";
-                    newRow.appendChild(Couponcell);
-                    const containerparent = document.createElement("td");
-                    containerparent.style.paddingLeft = "2em";
-                    const container = document.createElement("div");
-                    container.style.maxWidth = "6em";
-                    container.style.minWidth = "3em";
-                    container.className = "input-group";
+                    const couponName=coupon.name,currentRate=coupon.rate;
+                    if (couponName=='global'){
+                        $('#GlobalDiscount').text('Global Discounts : ' + currentRate + '%');
+                    }else{
+                        const newRow = document.createElement("tr");
+                        newRow.style.justifyContent ="space-around";
+                        const Couponcell = document.createElement("td");
+                        Couponcell.textContent = couponName.toUpperCase();
+                        newRow.appendChild(Couponcell);
+                        const containerparent = document.createElement("td");
+                        const container = document.createElement("div");
+                        container.style.maxWidth = "6em";
+                        container.style.minWidth = "3em";
+                        container.className = "input-group";
 
-                    // Create an input element
-                    const input = document.createElement("input");
-                    input.type = "number";
+                        // Create an input element
+                        const input = document.createElement("input");
+                        input.type = "number";
 
-                    input.value = currentRate;
-                    input.className = "form-control"; // You can add Bootstrap classes for styling
-                    input.min = 1;
-                    input.max=100;
-                    // Create a span to display the original value
-                    const container2parent = document.createElement("td");
-                    container2parent.style.paddingLeft = "2em";
-                    const container2 = document.createElement("div");
-                    
-                    container2.style.maxWidth="6em";
-                    container2.style.minWidth = "3em";
-                    const originalValueSpan = document.createElement("span");
-                    originalValueSpan.className = "input-group-text";
-                    originalValueSpan.style.paddingLeft='2.1em';
-                    originalValueSpan.textContent = parseInt(originalData[index][1])+'%';
-                    
-                    // Add a delete button
-                    const container3 = document.createElement("td");
-                    const deleteButton = document.createElement("button");
-                    deleteButton.style.marginTop='5px';
-                    deleteButton.textContent = "Delete";
-                    deleteButton.className = "btn btn-danger btn-sm ";
-                    
-                    deleteButton.addEventListener("click", function () {
-                        if (deleteButton.textContent === "Delete"){
-                            delCount++;
-                            Couponcell.style.color = "red";
-                            currentData[index][1] = -99;
-                            originalValueSpan.style.background = 'red';
-                            originalValueSpan.style.color = 'white';
-                            $('#proceedbutton5').prop('disabled', false);
-                            deleteButton.textContent = "Cancel";
-                            deleteButton.className = "btn btn-info btn-sm ";
-                            document.getElementById('warnDiscountchange').innerHTML =`<div class="alert alert-danger" role="alert" style="color:black;font-weight:500;text-align:center;">
-                               The Cupons marked Red will be Deleted
-                            </div>`;
-                            
-                        }else{
-                            delCount--;
-                            Couponcell.style.color = "";
-                            currentData[index][1] = originalData[index][1];
-                            originalValueSpan.style.background = '';
-                            originalValueSpan.style.color = '';
-                            if(delCount==0){
-                                $('#proceedbutton5').prop('disabled', true);
-                                document.getElementById('warnDiscountchange').innerHTML = `<div class="alert alert-danger" role="alert" style="color:black;font-weight:500;text-align:center;">
-                                    The Discount rates will be changed on confirmation.
+                        input.value = currentRate;
+                        input.className = "form-control"; // You can add Bootstrap classes for styling
+                        input.min = 1;
+                        input.max=100;
+                        // Create a span to display the original value
+                        const container2parent = document.createElement("td");
+                        const container2 = document.createElement("div");
+                        
+                        container2.style.maxWidth="6em";
+                        container2.style.minWidth = "3em";
+                        const originalValueSpan = document.createElement("span");
+                        originalValueSpan.className = "input-group-text";
+                        originalValueSpan.textContent = parseInt(originalData[index].rate)+'%';
+                        
+                        // Add a delete button
+                        const container3 = document.createElement("td");
+                        const deleteButton = document.createElement("button");
+                        deleteButton.style.marginTop='5px';
+                        deleteButton.textContent = "Delete";
+                        deleteButton.className = "btn btn-danger btn-sm ";
+                        
+                        deleteButton.addEventListener("click", function () {
+                            if (deleteButton.textContent === "Delete"){
+                                delCount++;
+                                Couponcell.style.color = "red";
+                                currentData[index].rate = -99;
+                                originalValueSpan.style.background = 'red';
+                                originalValueSpan.style.color = 'white';
+                                $('#proceedbutton5').prop('disabled', false);
+                                deleteButton.textContent = "Cancel";
+                                deleteButton.className = "btn btn-info btn-sm ";
+                                document.getElementById('warnDiscountchange').innerHTML =`<div class="alert alert-danger" role="alert" style="color:black;font-weight:500;text-align:center;">
+                                The Cupons marked Red will be Deleted
                                 </div>`;
-                            }
-        
-                            deleteButton.textContent = "Delete";
-                            deleteButton.className = "btn btn-danger btn-sm ";
+                                
+                            }else{
+                                delCount--;
+                                Couponcell.style.color = "";
+                                currentData[index].rate = originalData[index].rate;
+                                originalValueSpan.style.background = '';
+                                originalValueSpan.style.color = '';
+                                if(delCount==0){
+                                    $('#proceedbutton5').prop('disabled', true);
+                                    document.getElementById('warnDiscountchange').innerHTML = `<div class="alert alert-danger" role="alert" style="color:black;font-weight:500;text-align:center;">
+                                        The Discount rates will be changed on confirmation.
+                                    </div>`;
+                                }
+            
+                                deleteButton.textContent = "Delete";
+                                deleteButton.className = "btn btn-danger btn-sm ";
                         }
                         
                     });
@@ -745,17 +746,17 @@ function change_Discounts(){
                         if (event.target.value.length>2){
                             $('#proceedbutton5').prop('disabled', false);
                             event.target.value='100';
-                            currentData[index][1] =100;
+                            currentData[index].rate =100;
                         }
                         else if (isNaN(newValue) || newValue <= 0) {
                             event.target.value = '';
                             // Reset to the original value from originalDataArray
-                            currentData[index][1] = originalData[index][1];
+                            currentData[index].rate = originalData[index].rate;
                             $('#proceedbutton5').prop('disabled', true);
                         } else {
                             $('#proceedbutton5').prop('disabled', false);
                             const Value = parseFloat(event.target.value);
-                            currentData[index][1] = Value;
+                            currentData[index].rate = Value;
                         }
                         
                       
@@ -771,6 +772,8 @@ function change_Discounts(){
                     container3.appendChild(deleteButton);
                     newRow.appendChild(container3);
                     discountsTable.append(newRow);
+
+                    }
                 });
                 
             } else {
@@ -843,7 +846,7 @@ function change_discount_rate(){
         Password:passcode,
         NewCupon:couponName,
         NewRate:cuponRate,
-        TollRate: convertToKeyValuePairs(currentData)
+        discountRate: currentData
     }
     //console.log(payload);
     var warningElement = document.getElementById("warnDiscountchange");
@@ -874,14 +877,13 @@ function convertToKeyValuePairs(twoDList) {
     for (let i = 0; i < twoDList.length; i++) {
         const row = twoDList[i];
         if (row.length >= 2) {
-            const key = row[0];
-            const value = row[1];
+            const key = row.name;
+            const value = row.rate;
             keyValuePairs[key] = value;
         }
     }
     //console.log(keyValuePairs);
     return keyValuePairs;
-    
 }
 
 function getSuspendedEmails() {

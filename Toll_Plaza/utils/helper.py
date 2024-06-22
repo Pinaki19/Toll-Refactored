@@ -11,6 +11,11 @@ def check_user()->bool:
         return False
     return True
 
+def valid_user()->bool:
+    if 'email' not in session or 'user_id' not in session:
+        return False
+    return True
+
 def turn_into_num(s:str)->int:
     sum = 0
     for i in s:
@@ -49,8 +54,6 @@ def allowed_file(filename:str)->bool:
     # Define the allowed file extensions (e.g., for images)
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
-
-
 
 
 def get_toll_amount(vehicle:str, journey:str)->float:

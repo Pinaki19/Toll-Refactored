@@ -12,7 +12,7 @@ async function Process_Toll_pay() {
 
     // Create an object with the data you want to send to the /pay endpoint
     var data = {
-        Type: "Toll Payment",
+        Type: "toll pay",
         Vehicle_Type: Vehicle_Type,
         Journey: Journey,
         Vehicle_Number: Vehicle_Number
@@ -70,8 +70,8 @@ async function Check_and_apply() {
                 if (responseData.success) {
                     // Coupon applied successfully
                     const PaymentInfo = responseData.Data;
-                    const formattedCupon = formatToTwoDecimalPlaces(PaymentInfo.Cupon);
-                    const formattedTotal = formatToTwoDecimalPlaces(PaymentInfo.Amount + PaymentInfo.Gst - PaymentInfo.Cupon - PaymentInfo.GlobalDiscount);
+                    const formattedCupon = formatToTwoDecimalPlaces(PaymentInfo.coupon_disc);
+                    const formattedTotal = formatToTwoDecimalPlaces(PaymentInfo.amount + PaymentInfo.gst_applied - PaymentInfo.coupon_disc - PaymentInfo.global_disc);
                     document.getElementById("paymentInfoCupon").innerHTML = `&#8377;${formattedCupon}`;
                     document.getElementById("paymentInfoTotal").innerHTML = `&#8377;${formattedTotal}`;
                 } else {
@@ -90,7 +90,7 @@ async function Check_and_apply() {
 
 window.addEventListener('load',function(){
   try{
-      var val = PaymentInfo.Amount + PaymentInfo.Gst - PaymentInfo.Cupon - PaymentInfo.GlobalDiscount;
+      var val = PaymentInfo.amount + PaymentInfo.gst_applied - PaymentInfo.coupon_disc - PaymentInfo.global_disc;
       const formattedTotal = formatToTwoDecimalPlaces(val);
       document.getElementById("paymentInfoTotal").innerHTML = `&#8377;${formattedTotal}`;
       

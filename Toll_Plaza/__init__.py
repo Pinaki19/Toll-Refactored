@@ -24,6 +24,6 @@ def create_app():
     db.metadata.clear()
     Session(app)
     # Initialize Supabase client
-    app.supabase: Client = create_client(app.config['SUPABASE_URL'], app.config['SUPABASE_KEY'])
+    app.supabase: Client = create_client(app.config['SUPABASE_URL'], app.config['SERVICE_ROLE_KEY'])
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
     return app

@@ -11,5 +11,5 @@ requests
 Pillow
 flask_session
 setuptools
-git+https://github.com/jkehler/awslambda-psycopg2.git
+git+https://github.com/jkehler/awslambda-psycopg2/tree/92bd3dcf81f1fbb888726d3babedd53cab439b06/psycopg2-3.9
 

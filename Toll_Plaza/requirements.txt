@@ -10,5 +10,5 @@ flask-cors # Use the appropriate version of Flask-CORS
 requests
 Pillow
 flask_session
-
+python-setuptools
 

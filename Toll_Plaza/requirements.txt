@@ -11,4 +11,5 @@ requests
 Pillow
 flask_session
 setuptools
+psycopg2
 

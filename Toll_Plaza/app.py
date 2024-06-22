@@ -13,6 +13,7 @@ from Auth.helper import *
 from jinja2 import Environment
 IST = timezone('Asia/Kolkata')
 from __init__ import create_app,db
+import psycopg2
 
 app = create_app()
 

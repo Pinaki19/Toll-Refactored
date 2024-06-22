@@ -413,7 +413,7 @@
                     var message= data.message;
                     if(!data.Login){
                         message = message + "   As You are not Logged in, a Receipt will be downloaded.";
-                        downloadTransactionAsPDF(data,'',false);
+                        downloadTransactionAsPDF(data.data,'',false);
                     }
                        
                     $('#Payment_id').text('Reference No: ' + message);

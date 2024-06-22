@@ -1,0 +1,83 @@
+<style>
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #ddd;
+        margin: 0;
+        padding: 0;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .admin-table th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    .alert {
+        color: black;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .demote{
+        color:rgb(69, 184, 229);
+    }
+
+</style>
+
+<div id="DeleteAdmin">
+    {% if users|length == 0 %}
+    <div class="alert alert-info" role="alert">
+        No Admins to show
+    </div>
+    {% else %}
+    <table class="admin-table">
+        <thead>
+            <tr> 
+                <th>Name</th>
+                <th>Email</th>
+                <th>Demote</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>
+                    <span class="user-name" style="font-weight: 500;">{{ user.name }}</span>
+                </td>
+                <td style="color: rgb(237, 156, 26);">
+                    <span class="user-email" id="Emailid">{{ user.email }}</span>
+                </td>
+                <td>
+                    <input class="form-check-input remove-admin" onchange="removeAdmin(this)" type="checkbox">
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+
+<script>
+
+    function removeAdmin(cur) {
+        var row = cur.parentElement.parentElement;
+        var nameCell = row.querySelector('.user-name');
+        var emailCell = row.querySelector('.user-email');
+
+        if (cur.checked) {
+            nameCell.classList.add('demote');
+            emailCell.classList.add('demote');
+        } else {
+            nameCell.classList.remove('demote');
+            emailCell.classList.remove('demote');
+        }
+    }
+
+</script>

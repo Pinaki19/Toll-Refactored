@@ -1,0 +1,1184 @@
+{% extends "Base.html" %}
+{% block title %}<title>Profile Page</title>{% endblock title %}
+{% block Style_local %}
+
+<script async src="https://unpkg.com/pdf-lib"></script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<link rel="stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/Accounts.css') }}">
+<script src="{{ url_for('static',filename='js/Profile.js') }}"></script>
+
+{% endblock Style_local %}
+
+
+{% block navContent %}
+<a href="#" id='Logout' onclick="confirm_logout()" class="nav-item nav-link" style="margin-right:20px;">Log Out</a>
+{% endblock navContent %}
+
+{% block content %}
+<div role='main' style="margin-top:80px;">
+    <div class="container">
+    <div class="main-body">
+    
+          <div class="row gutters-sm">
+            <div class="col-md-4 mb-3">
+              <div class="card">
+                <div class="card-body" >
+                  <div class="d-flex flex-column align-items-center text-center">
+              
+                    <!-- Edit Button -->
+                    <button class="btn btn-secondary position-absolute top-1 end-0" id="editImageButton" style="background-color:#3e7eed;"><i class="bi bi-pencil-square"></i></button>
+                    <input type="file" accept="image/*" style="display: none;" id="imageUploadInput">
+                    <button class="btn btn-secondary position-absolute end-0" id="removeImageButton" style="top:60px; background-color:red;" onclick="Remove_Dp()"><i class="bi bi-trash3-fill"></i></button>
+                    <img src={{ user.pic_url }} alt="Profile image" class="rounded-circle" width="220" id="profileImage" style='outline:solid 2px black;'>
+                     
+                    <div class="mt-3">
+                      <h4>{{ user.name }}</h4>
+                      {% if  user.is_super_admin %}
+                      <hr>
+                      <h4 style='color:red;'>SUPER ADMIN</h4>
+
+                      {% elif user.is_admin %}
+                      <hr>
+                      <h4 style='color:#f56c27;'>ADMIN</h4>
+                      {% endif %}
+                      
+                    </div>
+                        
+                  </div>
+                  
+                </div>
+                
+              </div>
+              <div class="card mt-3">
+                <h4 class="list-group-item d-flex justify-content-between align-items-center" style="background:#f7e9c1;">Recents</h4>
+                <ul class="list-group list-group-flush">
+                  
+                </ul>
+               
+              </div>
+               <p class="text-muted py-1 px-5">Check all transactions tab for more details</p>
+            </div>
+            <div class="col-md-8">
+              <div class="card mb-3">
+                <div class="card-body" id="profileCardBody">
+                  <div class="row">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Full Name</h6>
+                    </div>
+                    <div class="col-sm-9 text-secondary" id="originalName">
+                      {{ user.name }}
+                    </div>
+                  </div>
+                  <hr>
+                  <div class="row">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Email</h6>
+                    </div>
+                    <div class="col-sm-9 text-secondary" id="email">
+                      {{ user.email }}
+                    </div>
+                  </div>
+                  <hr>
+                  
+                  <div class="row">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Mobile</h6>
+                    </div>
+                    <div class="col-sm-9 text-secondary" id="originalMobile">
+                      {{ user.mobile }}
+                    </div>
+                  </div>
+                  <hr>
+                  <div class="row">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Address</h6>
+                    </div>
+                    <div class="col-sm-9 text-secondary" id="originalAddress">
+                      {{user.address}}
+                    </div>
+                    
+                  </div>
+                  
+                  <hr>
+                  <div class="col-sm-15" style='text-align:right;' >
+                        <a class="btn btn-info" onclick="editProfile()">Edit</a>
+                    </div>
+                  
+                </div>
+              </div>
+          <div class="row gutters-sm" id="Content-Div" style="font-family:helvetica;">
+              
+            {% if  user.is_super_admin %}
+                <h4 style='color:red;'>SUPER ADMIN SECTION</h4>
+                    <script>
+                        show_super_admin_content();
+                        show_admin_content();
+                    </script>
+                    <h4 style="color:#28dded">USER SECTION </h4>
+                    <div class="col-sm-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="d-flex align-items-center mb-3" style="font-size:20px;">Your Wallet</h6>
+                                <p style="padding-bottom:4px;margin-bottom:0;">Check Wallet transactions, Add Money, Reset PIN.</p>
+                                {% if wallet.default %}
+                                <p id="Default_pin" style="padding:0;margin:0;color:red;padding-bottom:5px;">Default wallet PIN is 1234. Please change it.</p>
+                                {% else %}
+                                <p id="Default_pin" ></p>
+                                {% endif %}
+                                <!-- Input fields for new PIN and confirmation -->
+                                <div id="ResetPinFields" style="display: none;padding:5px;">
+                                  <input type="number" placeholder="Enter new PIN (4 digits)" id="NewPinInput" style="margin-right: 5px;" required maxlength="4">
+                                  <input type="number" placeholder="Confirm new PIN" id="ConfirmPinInput" style="margin-right: 5px;" required maxlength="4">
+
+                              </div>
+                                <hr style="padding:0px;margin:0px;">
+                                <p id="WalletBalance" style="padding:0;margin:0;position:absolute;top:18%;right:10%;color:#4a5cf7">Balance: <strong>{{wallet.balance}}</p></strong>
+                                <div style="margin-top:5px;padding:0px;text-align:right;">
+                                    <a class="btn btn-primary btn-md" id="ResetPinButton" onclick="Reset()">Reset PIN</a>
+                                    <a class="btn btn-primary btn-md" id="confirmButton" style="display:none;" >confirm</a>
+                                    <a class="btn btn-secondary btn-md" id="cancelButton" style="display:none;" >cancel</a>
+                                    <a class="btn btn-info btn-md" id="Gobutton" style="background-color:lightgreen;" data-bs-toggle="modal" data-bs-target="#walletModal">Go</a>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+              <script>
+                show_user_content();
+              </script>
+            {% elif user.is_admin  %}
+              <script>
+                  show_admin_content();
+              </script>
+              <h4 style="color:#28dded">USER SECTION </h4>
+               <div class="col-sm-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="d-flex align-items-center mb-3" style="font-size:20px;">Your Wallet</h6>
+                                <p style="padding-bottom:4px;margin-bottom:0;">Check Wallet transactions, Add Money, Reset PIN.</p>
+                                {% if wallet.default %}
+                                <p id="Default_pin" style="padding:0;margin:0;color:red;padding-bottom:5px;">Default wallet PIN is 1234. Please change it.</p>
+                                {% else %}
+                                <p id="Default_pin"></p>
+                                {% endif %}
+                                <!-- Input fields for new PIN and confirmation -->
+                                <div id="ResetPinFields" style="display: none;padding:5px;">
+                                  <input type="number" placeholder="Enter new PIN (4 digits)" id="NewPinInput" style="margin-right: 5px;" required maxlength="4">
+                                  <input type="number" placeholder="Confirm new PIN" id="ConfirmPinInput" style="margin-right: 5px;" required maxlength="4">
+
+                              </div>
+                                <hr style="padding:0px;margin:0px;">
+                                <p id="WalletBalance" style="padding:0;margin:0;position:absolute;top:11%;right:10%;color:blue">Balance: {{wallet.balance}}</p>
+                                <div style="margin-top:5px;padding:0px;text-align:right;">
+                                    <a class="btn btn-primary btn-md" id="ResetPinButton" onclick="Reset()">Reset PIN</a>
+                                    <a class="btn btn-primary btn-md" id="confirmButton" style="display:none;" >confirm</a>
+                                    <a class="btn btn-secondary btn-md" id="cancelButton" style="display:none;" >cancel</a>
+                                    <a class="btn btn-info btn-md" id="Gobutton" style="background-color:lightgreen;" data-bs-toggle="modal" data-bs-target="#walletModal">Go</a>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            <script>show_user_content()</script>
+
+            {% else %}
+            <h4 style="color:#28dded">USER SECTION </h4>
+                <div class="col-sm-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="d-flex align-items-center mb-3" style="font-size:20px;">Your Wallet</h6>
+                                <p style="padding-bottom:4px;margin-bottom:0;">Check Wallet transactions, Add Money, Reset PIN.</p>
+                                {% if wallet.default %}
+                                <p id="Default_pin" style="padding:0;margin:0;color:red;padding-bottom:5px;">Default wallet PIN is 1234. Please change it.</p>
+                                {% else %}
+                                <p id="Default_pin"></p>
+                                {% endif %}
+                                <!-- Input fields for new PIN and confirmation -->
+                                <div id="ResetPinFields" style="display: none;padding:5px;">
+                                  <input type="number" placeholder="Enter new PIN (4 digits)" id="NewPinInput" style="margin-right: 5px;" required maxlength="4">
+                                  <input type="number" placeholder="Confirm new PIN" id="ConfirmPinInput" style="margin-right: 5px;" required maxlength="4">
+
+                              </div>
+                                <hr style="padding:0px;margin:0px;">
+                                <p id="WalletBalance" style="padding:0;margin:0;position:absolute;top:11%;right:10%;color:blue">Balance: {{wallet.balance}}</p>
+                                <div style="margin-top:5px;padding:0px;text-align:right;">
+                                    <a class="btn btn-primary btn-md" id="ResetPinButton" onclick="Reset()">Reset PIN</a>
+                                    <a class="btn btn-primary btn-md" id="confirmButton" style="display:none;" >confirm</a>
+                                    <a class="btn btn-secondary btn-md" id="cancelButton" style="display:none;" >cancel</a>
+                                    <a class="btn btn-info btn-md" id="Gobutton" style="background-color:lightgreen;" data-bs-toggle="modal" data-bs-target="#walletModal">Go</a>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+              <script>
+                  show_user_content();
+              </script>
+            {% endif %}
+              </div>
+            </div>
+          </div>
+
+        </div>
+    </div>
+
+
+   <!-- Wallet Modal -->
+<div class="modal fade" id="walletModal" tabindex="-1" aria-labelledby="walletModalLabel" aria-hidden="true" >
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#f9fae8;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="walletModalLabel">User Wallet Information</h5>
+            </div>
+            <div class="modal-body" id="WalletBody" style="padding:25px;">
+                <p id="CurrentBalance"><strong >Current Balance:</strong> &#8377;{{wallet.balance}} </p>
+                <p id="MaxBalance"><strong>Maximum Balance Cap: </strong>&#8377;50,000</p>
+                <p id="Added"><strong>Total Added:</strong> &#8377;{{wallet.added}}</p>
+                <p id="Spent"> <strong>Total Spent:</strong> &#8377;{{wallet.spent}}</p>
+                
+                <h6 style="text-align:center;color:blue;">Recent Wallet Transactions</h6>
+                {% include 'recent_transactions.html' %}
+                <div id="AddMoneySection" style="display: none;">
+                    <label for="amount">Enter Amount:</label>
+                    <input type="number" id="amount" name="amount" min="1" required placeholder="Max 5000">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="toggleAddMoneySection()">Add Money</button>
+                <button type="button" class="btn btn-primary" id="proceedButton" style="display: none;" onclick="processAddMoney()">Proceed</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="modal fade" id="RecentModal" tabindex="-1" aria-labelledby="RecentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background:#fafae8;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="RecentModalLabel">All Transactions</h5>
+                    
+                  <input type="text" class="form-control" placeholder="Transactio  ID" id="Search_bar2" required style="width:50%">
+                <button type="submit" id="Search_btn2" onclick="show()" class="btn btn-secondary" style="position: relative; right:2em;"><i style="position: relative; bottom: 2px;" class="bi-search"></i></button>
+            
+                </div>
+                <p class="text-muted py-1 px-5" style="padding-bottom:0;margin:0;">Contact us with Transaction id, Incase of any issues</p>
+                
+                <div class="modal-body" id="RecentModalbody" style="padding:25px;padding-top:10px;">
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<div class="modal fade" id="newAdminModal" tabindex="-1" aria-labelledby="newAdminModalLabel" aria-hidden="true" >
+  <div class="modal-dialog modal-dialog-centered" style="min-width:45%">
+        <div class="modal-content" style="background:#f9fae8;">
+          <div class="modal-header">
+              <h5 class="modal-title" id="newAdminModalLabel">Modify Users</h5>
+          </div>
+          <div class="modal-body" id="newAdminBody" style="padding:25px;">
+              {% include 'Create_Admin.html' %}
+          </div>
+          <div id="reset">
+            <div id="warning"></div>
+            <div id="EnterPasscode" style="display: none;justify-self:center;text-align:center;padding-bottom:5px;margin:0;">
+                      <label for="Passcode">Enter Passcode:</label>
+                      <input type="number" id="passcode" name="passcode" min="1" required placeholder="4 digit passcode">
+            </div>
+            <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="reset_modal()">Close</button>
+                  <button type="button" disabled class="btn btn-primary" id="proceedbutton3" onclick="Newadmin()">Proceed</button>
+                  <button type="button" class="btn btn-primary" id="confirmbutton" style="display: none;" onclick="modify_users()">Confirm</button>
+              </div>
+          </div>
+        </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteAdminModal" tabindex="-1" aria-labelledby="deleteAdminModalLabel" aria-hidden="true" >
+  <div class="modal-dialog modal-dialog-centered" style="min-width:45%">
+        <div class="modal-content" style="background:#f9fae8;">
+          <div class="modal-header">
+              <h5 class="modal-title" id="deleteAdminModalLabel">Remove Admin</h5>
+          </div>
+          <div class="modal-body" id="newAdminBody" style="padding:25px;">
+              {% include 'Delete_Admin.html' %}
+          </div>
+          <div id="reset">
+            <div id="warning2"></div>
+            <div id="EnterPasscode2" style="display: none;justify-self:center;text-align:center;padding-bottom:5px;margin:0;">
+                      <label for="Passcode2">Enter Passcode:</label>
+                      <input type="number" id="passcode2" onchange="checkInput(this)" name="passcode2" min="1" required placeholder="4 digit passcode">
+            </div>
+            <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="reset_modal2()">Close</button>
+                  <button type="button" disabled class="btn btn-primary" id="proceedbutton2" onclick="deladmin()">Proceed</button>
+                  <button type="button" class="btn btn-primary" id="confirmbutton2" style="display: none;" onclick="delete_admin()">Confirm</button>
+              </div>
+          </div>
+        </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="changeTollModal" tabindex="-1" aria-labelledby="changeTollModalLabel" aria-hidden="true" >
+  <div class="modal-dialog modal-dialog-centered" style="min-width:40%">
+        <div class="modal-content" style="background:#f9fae8;">
+          <div class="modal-header">
+              <h5 class="modal-title" id="changeTollModalLabel">Change Current Toll Rate</h5>
+          </div>
+          
+          <div class="modal-body ChangeToll-body" id="newAdminBody" style="padding:25px;">
+              {% include 'Change_Toll.html' %}
+              
+          </div>
+          <div id="reset">
+              <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="change_toll_modal()">Close</button>
+                    <button type="button" disabled class="btn btn-primary" id="proceedbutton4" onclick="change_toll()">Proceed</button>
+                    <button type="button" class="btn btn-primary" id="confirmbutton4" style="display: none;" onclick="change_toll_Rate()">Confirm</button>
+            </div>
+          </div>
+        </div>
+  </div>
+</div>
+
+<div class="modal fade" id="changeDiscountsModal" tabindex="-1" aria-labelledby="changeDiscountsModalLabel" aria-hidden="true" >
+  <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#f9fae8;">
+          <div class="modal-header">
+              <h5 class="modal-title" id="changeDiscountsModalLabel">Change Current Discounts</h5>
+          </div>
+          <div class="modal-body" id="changeDiscountsBody" style="padding:25px;">
+            <div style="padding-top:0;margin-top:0;">
+              <div class='row'>
+                <div class='col col-sm-9' id='GlobalDiscount' style="align-self:center;"></div>
+                <button  class='col col-sm-2 btn btn-info' type="button" id="globalChange"  onclick="change_global()" style="max-height:2.5em;">Change</button>
+      
+              </div>
+              
+              <div  id="EnterNewRate" style="display: none;justify-self:left;text-align:left;padding:15px 10px 10px 0px;margin:0;">
+                    <label for="Passcode5">Enter New Rate:</label>
+                    <input type="number" id="GlobalRate" name="GlobalRate" min="0" max='99' required placeholder="New Rate" value="" style="min-width:6em;">
+              </div>
+              
+              <div id="NewCoupon" style="display: none;justify-self:center;text-align:left;padding:5px;padding-left:35px;margin:0;">
+                            <label for="Newcuponname">Coupon Name:</label>
+                            <input type="text" id="cuponName" name="cuponName"  required placeholder="New Coupon name" style="max-width:10em;" value=''>
+                            <br>
+                            <label for="Newcuponrate" style="padding-right:5px;padding-top:10px;">Discount Rate:</label>
+                            <input type="number" id="cuponRate" name="cuponRate" min="1" max="100" required placeholder="discount Rate" style="width:10em;" value=''>
+            
+              </div>
+       <hr>
+            </div>
+              {% include 'Change_Discount.html' %}
+              
+          </div>
+              <div id="DiscountsFooter">
+              <div id="EnterPasscode5" style="display: none;justify-self:center;text-align:center;padding-bottom:5px;margin:0;">
+                        <label for="Passcode5">Enter Passcode:</label>
+                        <input type="number" id="passcode5" onchange="checkInput(this)" name="passcode5" min="1" required placeholder="4 digit passcode">
+              </div>
+              
+            <div id="EnterPasscode5" style="display: none;justify-self:center;text-align:left;padding-top:20px;padding-left:35px;margin:0;">
+                            <label for="Passcode5">Enter Passcode:</label>
+                            <input type="number" id="passcode5" onchange="checkInput(this)" name="passcode5" min="1" required placeholder="4 digit passcode" style="max-width:10em;">
+            </div>
+              <div class="modal-footer" >
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="reset_modal3()">Close</button>
+                    <button type="button" disabled class="btn btn-primary" id="proceedbutton5" onclick="changeCupon()">Proceed</button>
+                    <button type="button" class="btn btn-primary" id="confirmbutton5" style="display: none;" onclick="change_discount_rate()">Confirm</button>
+                    <button type="button" class="btn btn-primary" id="ADDnew" onclick="add_new_cupon()">Add New</button>
+
+              </div>
+          </div>
+  </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+
+{% block scripts %}
+
+<script type='text/javascript'>
+
+  // Function to fill the modal body with transaction details
+function fillModalBody(transactionData,email) {
+    const modalBody = document.getElementById("RecentModalbody");
+
+    // Create and append elements for transaction details
+    const transactionType = document.createElement("p");
+    transactionType.textContent = `Transaction Type: ${transactionData.type}`;
+    transactionType.style.color = transactionData.type === 'add money' ? '#43e66e' : '#de282b';
+    transactionType.style.textAlign = 'center';
+
+   const time = new Date(transactionData.expire_time).toString();
+
+    // Find the position of "GMT"
+    const gmtIndex = time.indexOf('GMT');
+
+    // Erase everything from "GMT" onwards
+    const formattedTime = time.substring(0, gmtIndex).trim();
+
+    // Append "(IST)"
+    const result = `${formattedTime} (IST)`;
+    // Create and append the element for the formatted date
+    const transactionDate = document.createElement("p");
+    transactionDate.textContent = `Transaction Date: ${result}`;
+
+    const price = transactionData.amount - transactionData.global_disc - transactionData.coupon_disc + transactionData.gst_applied;
+    const priceBreakup = document.createElement("p");
+    priceBreakup.textContent = `Net Amount: ${price.toFixed(2)}`;
+
+    // Create the div element with the ID
+    const div = document.createElement("div");
+    div.id = transactionData.id;
+    div.style.padding = '10px';
+    div.style.border = '1px solid #381c03';
+    div.style.background = 'white';
+    div.style.position = 'relative'; // Set position to relative
+
+    const transactionId = document.createElement("a");
+  transactionId.textContent = `Transaction ID: ${transactionData.id}`;
+  
+  transactionId.href = "#"; // This makes it look like a link
+  transactionId.style.color = "blue"; // Set a suitable link color, adjust as needed
+
+  transactionId.addEventListener("click", async function (event) {
+    event.preventDefault(); // Prevent default action of the link
+    await downloadTransactionAsPDF(transactionData, email, true);
+  });
+    // Append elements to the main div
+    transactionType.style.paddingBottom='0px';
+    transactionDate.style.paddingBottom = '0px';
+    priceBreakup.style.paddingBottom = '0px';
+    transactionId.style.paddingBottom = '0px';
+    transactionType.style.marginBottom = '5px';
+  transactionDate.style.marginBottom = '0px';
+  priceBreakup.style.marginBottom = '0px';
+  transactionId.style.marginBottom = '0px';
+    div.appendChild(transactionType);
+    div.appendChild(transactionDate);
+    div.appendChild(priceBreakup);
+    div.appendChild(transactionId);
+
+    modalBody.appendChild(div);
+}
+
+  async function downloadTransactionAsPDF(data, email, email_set) {
+
+    // Create a new PDF document
+    const pdfDoc = await PDFLib.PDFDocument.create();
+
+    // Add a page to the document
+    const page = pdfDoc.addPage([600, 500]);
+
+    // Set up a font for text rendering
+    const helveticaFont = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+
+    // Embed the favicon image (replace 'favicon.ico' with the actual image URL)
+    const imageBytes = await fetch('favicon.png').then((res) => res.arrayBuffer());
+    const image = await pdfDoc.embedPng(imageBytes);
+    page.drawImage(image, {
+      x: 100,
+      y: 420,
+      width: 50,
+      height: 50,
+    });
+
+    // Add the header with company name and contact email
+    page.drawText('Smooth Sailing Systems', {
+      x: 170,
+      y: 450,
+      size: 18,
+      font: helveticaFont,
+      color: PDFLib.rgb(0, 0, 0), // Black color
+    });
+
+    page.drawText(`Contact Email: smoothsailingsystems@gmail.com`, {
+      x: 170,
+      y: 430,
+      size: 12,
+      font: helveticaFont,
+      color: PDFLib.rgb(0, 0, 0),
+    });
+
+    // Add an HR to separate the header and body
+    page.drawLine({
+      start: { x: 50, y: 410 },
+      end: { x: 550, y: 410 },
+      thickness: 1,
+      color: PDFLib.rgb(0, 0, 0),
+    });
+
+    page.drawText('Transaction Receipt', {
+      x: 210,
+      y: 380,
+      size: 16,
+      font: helveticaFont,
+      color: PDFLib.rgb(0, 0, 0), // Black color
+    });
+    // Add the email in the body
+    if (email_set) {
+      page.drawText(`User Email: ${email}`, {
+        x: 60,
+        y: 330,
+        size: 12,
+        font: helveticaFont,
+        color: PDFLib.rgb(0, 0, 0),
+      });
+    }
+
+    /*
+    const time = new Date(DateTime);
+    time.setMinutes(time.getMinutes() - 330);
+    const formattedDate = time.toLocaleString('en-US', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+    });*/
+    const now = new Date();
+
+    const formattedNow = now.toLocaleString('en-US', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+    });
+
+    const transaction_time = new Date(data.expire_time).toString();
+    console.log(transaction_time)
+    const table = [
+      ['Payment Type', data.type],
+      ['Reference Number', data.id],
+      ['Transaction Date & Time', transaction_time],
+      ['Amount', data.amount.toString()],
+      ['Coupon Discount', data.coupon_disc.toString()],
+      ['Preapplied Discount', data.global_disc.toString()],
+      ['GST (Tax)', data.gst_applied.toString()],
+      ['Total', String((data.amount - data.coupon_disc - data.global_disc + data.gst_applied).toFixed(2))],
+    ];
+
+    const tableX = 50;
+    const tableY = 310;
+    const cellMargin = 20;
+    const rowHeight = 20;
+    const colWidth = 200;
+
+    for (let i = 0; i < table.length; i++) {
+      for (let j = 0; j < table[i].length; j++) {
+        page.drawText(table[i][j], {
+          x: tableX + j * colWidth + cellMargin,
+          y: tableY - i * rowHeight - cellMargin,
+          size: 12,
+          font: helveticaFont,
+          color: PDFLib.rgb(0, 0, 0),
+        });
+      }
+    }
+
+    page.drawLine({
+      start: { x: 50, y: 50 },
+      end: { x: 550, y: 50 },
+      thickness: 1,
+      color: PDFLib.rgb(0, 0, 0),
+    });
+
+    // Add the footer
+    page.drawText('Contact us in case of any discrepancy', {
+      x: 80,
+      y: 35,
+      size: 10,
+      font: helveticaFont,
+      color: PDFLib.rgb(0, 0, 0),
+    });
+
+    page.drawText('At ' + formattedNow.toString(), {
+      x: 390,
+      y: 35,
+      size: 10,
+      font: helveticaFont,
+      color: PDFLib.rgb(0, 0, 0),
+    });
+
+    // Serialize the PDF document to bytes
+    const pdfBytes = await pdfDoc.save();
+
+    // Convert the bytes to a Blob
+    const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+    // Create a save popup without automatic download
+    saveAs(pdfBlob, `${'Receipt:'+data.id}.pdf`);
+  }
+
+
+
+    async function confirm_logout(){
+        var result=confirm('You are about to log-out!');
+        if (result){
+            let response=await fetch('/Log_out');
+            // Handle the response as needed
+            if (response.status === 200 && response.redirected) {
+                window.location.href=response.url;
+            } else {
+                alert("Log Out failed.");
+            }
+        }
+    }
+
+function editProfile() {
+    // Get the reference to the card body element
+    var cardBody = document.getElementById("profileCardBody");
+    const headername = document.createElement("div");
+    headername.setAttribute('id',"originalName");
+    const headermob = document.createElement("div");
+    headermob.setAttribute('id',"originalMobile");
+    const headeradd = document.createElement("div");
+    headeradd.setAttribute('id',"originalAddress");
+    headername.innerText= document.getElementById("originalName").innerText;
+    headermob.innerText = document.getElementById("originalMobile").innerText;
+    headeradd.innerText = document.getElementById("originalAddress").innerText;
+    
+    // Create the new card body content
+    var newCardBodyContent = `
+        <div class="row mb-3">
+            <div class="col-sm-3">
+                <h6 class="mb-0">Full Name</h6>
+            </div>
+            <div class="col-sm-9 text-secondary">
+                <input type="text" class="form-control" id="editName" value="{{user.name}}">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-sm-3">
+                <h6 class="mb-0">Email</h6>
+            </div>
+            <div class="col-sm-9 text-secondary">
+                <span id="email">{{user.email}}</span>
+            </div>
+        </div>
+        <!-- Add similar input fields for Phone, Mobile, and Address here -->
+        <div class="row mb-3">
+            <div class="col-sm-3">
+                <h6 class="mb-0">Mobile</h6>
+            </div>
+            <div class="col-sm-9 text-secondary">
+                <input type="text" class="form-control" id="editMobile" value="{{user.mobile}}">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-sm-3">
+                <h6 class="mb-0">Address</h6>
+            </div>
+            <div class="col-sm-9 text-secondary">
+                <input type="text" class="form-control" id="editAddress" value="{{user.address}}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-9 text-secondary" style='text-align:right;'>
+                <input type="button" class="btn btn-primary px-4" value="Save Changes" onclick='Save_data()'>
+            </div>
+        </div>
+    `;
+
+    // Replace the content of the card body with the new content
+    cardBody.innerHTML = newCardBodyContent;
+    document.head.appendChild(headername);
+    document.head.appendChild(headermob);
+    document.head.appendChild(headeradd);
+}
+
+function formatTime(time){
+  const transactionDateTime = new Date(time);
+
+  transactionDateTime.setMinutes(transactionDateTime.getMinutes() - 330);
+  // Format date and time
+  const formattedDate = transactionDateTime.toLocaleString('en-US', {
+    timeZone: 'Asia/Kolkata', // IST timezone
+    month: 'long',
+    day: 'numeric',
+
+  });
+  return formattedDate;
+}
+
+function Save_data() {
+  // Retrieve the edited name, address, and mobile number
+  var editedName = document.getElementById("editName").value;
+  var editedMobile = document.getElementById("editMobile").value;
+  var editedAddress = document.getElementById("editAddress").value;
+  var Email = document.getElementById("email").innerText;
+
+ // Get the original data from the page
+  var originalName = document.getElementById("originalName").innerText;
+  var originalMobile = document.getElementById("originalMobile").innerText;
+  var originalAddress = document.getElementById("originalAddress").innerText;
+
+  // Check if any data has changed
+  var dataChanged = false;
+
+  if (editedName !== originalName) {
+    dataChanged = true;
+  }
+
+  if (editedMobile !== originalMobile) {
+    dataChanged = true;
+  }
+
+  if (editedAddress !== originalAddress) {
+    dataChanged = true;
+  }
+
+  // If no data has changed, do not send a request
+  if (!dataChanged) {
+    //alert("No changes detected.");
+    location.reload();
+    return;
+  }
+
+
+  if(editedName.length<4 || editedName.length>40){
+    alert("Name can have minimum of 4 and maximum of 40 characters.");
+    return;
+  }
+
+  if (editedAddress.length > 100){
+    alert("Address can have maximum of 100 characters.");
+    return;
+  }
+
+  if(!validateMobile()){
+    location.reload();
+    return;
+  }
+  // Perform your desired action, such as sending data to the server
+  // For example, you can use an AJAX request to send the data to your Flask endpoint:
+  // Replace '/Edit_account' with your actual endpoint URL
+  // You can send the data as a JSON object in the request body
+
+  var data = {
+    email:Email,
+    name: editedName,
+    mobile: editedMobile,
+    address: editedAddress
+  };
+
+  // Send the data to the server
+  fetch('/Edit_account', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+    .then(response => response.json())
+    .then(data => {
+      // Handle the response from the server if needed
+     
+      location.reload();
+    })
+    .catch(error => {
+      // Handle any errors
+      console.error(error);
+      location.reload();
+    });
+    
+}
+
+// Get the elements
+var profileImage = document.getElementById("profileImage");
+var editImageButton = document.getElementById("editImageButton");
+var imageUploadInput = document.getElementById("imageUploadInput");
+
+// Add a click event listener to the edit button
+editImageButton.addEventListener("click", function () {
+    // Trigger the file input element to open the file dialog
+    imageUploadInput.click();
+});
+
+// Add an event listener to handle image selection
+imageUploadInput.addEventListener("change", function () {
+    var file = imageUploadInput.files[0];
+    if (file) {
+        // Check if the file size is within the allowed limit (10 MB)
+        if (file.size <= 10 * 1024 * 1024) {
+            // Validate the file format (allow only image files)
+            if (file.type.startsWith("image/")) {
+                // Read and display the selected image
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    profileImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+
+                saveProfileImage(file);
+            } else {
+                alert("Please select a valid image file.");
+            }
+        } else {
+            alert("File size exceeds the allowed limit (10 MB).");
+        }
+    }
+});
+
+function saveProfileImage(imageFile) {
+    // Get the selected image file
+    console.log(imageFile);
+    
+    if (!imageFile) {
+        alert("Please select an image file.");
+        return;
+    }
+
+    // Create a FormData object to send the file
+    var formData = new FormData();
+    formData.append("image", imageFile);
+
+    // Send an AJAX POST request to the server to upload the image
+    fetch("/upload_image", {
+        method: "POST",
+        body: formData,
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.success) {
+            // Image uploaded successfully, you can update the UI or show a success message
+            //alert("Image uploaded successfully!");
+            //location.reload(); // Refresh the page or update the profile image element
+        } else {
+            // Handle the case where the upload failed
+            alert("Image upload failed: " + data.message);
+        }
+    })
+    .catch(function(error) {
+        // Handle any errors that occur during the fetch
+        console.error("Image upload error:", error);
+    });
+}
+
+
+function Remove_Dp(){
+  let result=confirm("You are about to Remove your Profile picture.")
+  if(!result){
+    return;
+  }
+  fetch("/remove_profile_image", {
+        method: "GET",
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+       location.reload();
+    })
+    .catch(function(error) {
+        // Handle any errors that occur during the fetch
+        console.error("Profile picture removal error:", error);
+    });
+
+}
+
+$('#walletModal').on('show.bs.modal', function (event) {
+  if(document.getElementById('RecentTransactions').dataSet==true){
+        return;
+    }else{
+        document.getElementById('RecentTransactions').dataSet= true;
+    }
+    $.ajax({
+      url: '/get_recent_transactions',
+      method: 'GET',
+      success: function (data) {
+          $('#RecentTransactions').html(data);
+        },
+      error: function (error) {
+        console.error('Error walletModal fetching recent transactions:', error);
+      }
+    });
+});
+
+
+
+$('#newAdminModal').on('show.bs.modal', function (event) {
+  if(document.getElementById('CreateAdmin').dataSet==true){
+        return;
+    }else{
+        document.getElementById('CreateAdmin').dataSet= true;
+    }
+    $.ajax({
+      url: '/users',
+      method: 'GET',
+      success: function (data) {
+          $('#CreateAdmin').html(data);
+        },
+      error: function (error) {
+          var errorDiv = $('<div>', {
+          class: 'alert alert-danger',
+          role: 'alert',
+          style: 'color:black;font-weight:500;text-align:center;',
+          html: error.responseJSON.message // Use .html() to insert the provided HTML
+        });
+        $('#newAdminModal').find('.modal-footer').remove();
+        $('#newAdminModal').find('.modal-body').append(errorDiv);
+      }
+    });DeleteAdmin
+});
+
+  $('#newAdminModal').on("hidden.bs.modal", function () {
+    const data=`<div id="warning"></div>
+          <div id="EnterPasscode" style="display: none;justify-self:center;text-align:center;padding-bottom:5px;margin:0;">
+                    <label for="Passcode">Enter Passcode:</label>
+                    <input type="number" id="passcode" name="passcode" min="1" required placeholder="4 digit passcode">
+          </div>
+          <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="reset_modal()">Close</button>
+                <button type="button" disabled class="btn btn-primary" id="proceedbutton3" onclick="Newadmin()">Proceed</button>
+                <button type="button" class="btn btn-primary" id="confirmbutton" style="display: none;" onclick="modify_users()">Confirm</button>
+            </div>
+        </div>`;
+    $('#newAdminModal').find('#reset').html(data);
+  });
+
+  $('#deleteAdminModal').on("hidden.bs.modal", function () {
+      const data = `<div id="warning2"></div>
+          <div id="EnterPasscode2" style="display: none;justify-self:center;text-align:center;padding-bottom:5px;margin:0;">
+                    <label for="Passcode2">Enter Passcode:</label>
+                    <input type="number" id="passcode2" onchange="checkInput(this)" name="passcode2" min="1" required placeholder="4 digit passcode">
+          </div>
+          <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="reset_modal2()">Close</button>
+                <button type="button" disabled class="btn btn-primary" id="proceedbutton2" onclick="deladmin()">Proceed</button>
+                <button type="button" class="btn btn-primary" id="confirmbutton2" style="display: none;" onclick="delete_admin()">Confirm</button>
+            </div>
+        </div>`;
+      $('#deleteAdminModal').find('#reset').html(data);
+    });
+
+
+$('#deleteAdminModal').on('show.bs.modal', function (event) {
+  if(document.getElementById('DeleteAdmin').dataSet==true){
+        return;
+    }else{
+        document.getElementById('DeleteAdmin').dataSet= true;
+    }
+    $.ajax({
+      url: '/admins',
+      method: 'GET',
+      success: function (data) {
+          $('#DeleteAdmin').html(data);
+        },
+      error: function (error) {
+        var errorDiv = $('<div>', {
+          class: 'alert alert-danger',
+          role: 'alert',
+          style: 'color:black;font-weight:500;text-align:center;',
+          html: error.responseJSON.message // Use .html() to insert the provided HTML
+        });
+        $('#deleteAdminModal').find('.modal-footer').remove();
+        $('#deleteAdminModal').find('.modal-body').append(errorDiv);
+      }
+    });
+});
+
+
+
+$('#changeDiscountsModal').on('show.bs.modal', function (event) {
+  $.ajax({
+    url: '/verify_user',
+    method: 'GET',
+    success: function (data) {
+       if (document.getElementById('Discounts').dataSet == true) {
+        return;
+      } else {
+        document.getElementById('Discounts').dataSet = true;
+      }
+      change_Discounts();
+    },
+    error: function (error) {
+      $('#proceedbutton5').prop('disabled', true);
+      $('#ADDnew').prop('disabled', true);
+      $('#Header').remove();
+      $('#changeDiscountsModal').find('.modal-footer').remove();
+      document.getElementById('warnDiscountchange').innerHTML = `<div class="alert alert-danger" role="alert" style="color:black;font-weight:500;text-align:center;">
+               ${error.responseJSON.message}
+            </div>`;
+    },
+  });
+   
+});
+
+
+function checkInput(cur) {
+    var inputValue = $(cur).val();
+    if (isNaN(parseInt(inputValue))) {
+      $(cur).val('');
+      return;
+    }
+    if (inputValue.length > 4) {
+      $(cur).val(inputValue.slice(0, 4)); // Truncate to 4 digits
+    }
+}
+
+$("#cuponName").on("input", function() {
+    var inputValue = $(this).val();
+    $('#proceedbutton5').prop('disabled', false);
+    if (inputValue.length > 8) {
+        $(this).val(inputValue.slice(0, 8)); // Truncate to 4 digits
+    }
+});
+
+$("#amount").on("input", function() {
+    var inputValue = $(this).val();
+    var amount=parseInt(inputValue);
+    if (amount>5000||inputValue.length>4) {
+        $(this).val(inputValue.slice(0, 4));
+    }else if(isNaN(amount)||amount<0){
+      $(this).val('');
+    }
+});
+
+$("#cuponRate").on("input", function() {
+    $('#proceedbutton5').prop('disabled', false);
+    var inputValue = $(this).val();
+    if (inputValue.length > 3) {
+        $(this).val(inputValue.slice(0, 3)); 
+    }
+    try{
+      var val=parseInt($(this).val());
+      if (val<=0 ||isNaN(val)) {
+          $(this).val(''); 
+      }
+      else if(val>100){
+        $(this).val(100); 
+      }
+    }
+      catch{
+        $(this).val(''); 
+      }
+});
+
+
+$("#GlobalRate").on("input", function() {
+    $('#proceedbutton5').prop('disabled', false);
+    var inputValue = $(this).val();
+    if (inputValue.length > 2) {
+        $(this).val(inputValue.slice(0, 2)); 
+    }
+    try{
+      var val=parseInt($(this).val());
+      if (val<0 ||isNaN(val)) {
+          $(this).val(''); 
+      }
+      else if(val>100){
+        $(this).val(99); 
+      }
+    }
+      catch{
+        $(this).val(''); 
+      }
+});
+    
+
+$(document).on('change', '#CreateAdmin input[type="checkbox"]', function() {
+    // Check if at least one checkbox is checked
+    if ($('#CreateAdmin input[type="checkbox"]:checked').length > 0) {
+        $('#proceedbutton3').prop('disabled', false);
+    } else {
+        $('#proceedbutton3').prop('disabled', true);
+    }
+});
+
+$(document).on('change', '#DeleteAdmin input[type="checkbox"]', function() {
+    // Check if at least one checkbox is checked
+    if ($('#DeleteAdmin input[type="checkbox"]:checked').length > 0) {
+        $('#proceedbutton2').prop('disabled', false);
+    } else {
+        $('#proceedbutton2').prop('disabled', true);
+    }
+});
+
+
+
+// When the modal is shown, make an AJAX request to get the data
+$("#changeTollModal").on("shown.bs.modal", function () {
+    const tableBody = document.getElementById("TollTableBody");
+    $.ajax({
+      url: '/verify_user',
+      method: 'GET',
+      success: function (data) {
+        $.ajax({
+            url: "/get_toll_rate",
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                if(tableBody.dataSet==true){
+                    return;
+                }else{
+                    tableBody.dataSet= true;
+                }
+                console.log(data)
+                populateModalTable(data);
+            }
+          });
+        },
+        error: function (error) {
+          $('#proceedbutton4').prop('disabled', true);
+          $('#Header').remove();
+          $(changeTollModal).find('.modal-footer').remove();
+          document.getElementById('warnTollchange').innerHTML=`<div class="alert alert-danger" role="alert" style="color:black;font-weight:500;text-align:center;">
+               ${error.responseJSON.message}
+            </div>`;
+        },
+    });
+});
+    
+    
+$("#RecentModal").on("hidden.bs.modal", function () {
+   $('#Search_bar2').val('');
+});
+
+function show() {
+    var searchValue = $('#Search_bar2').val().trim();
+    
+    // Find all child elements of #RecentModalBody
+    var childElements = $('#RecentModalbody').children();
+
+    var found = false;
+
+    childElements.each(function() {
+        var fourthChild = $(this).find('a:nth-child(4)').text().trim();
+        //console.log(fourthChild);
+        if (fourthChild === 'Transaction ID: ' + searchValue) {
+            found = true;
+            var targetElement = this; // The child element with the matching Transaction ID
+            window.find(searchValue);
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+            return false; // Stop the loop if a match is found
+        }
+    });
+
+    if (!found) {
+        $('#Search_bar2').val("Not Found!");
+    }
+}
+
+
+</script>
+
+{% endblock scripts %}

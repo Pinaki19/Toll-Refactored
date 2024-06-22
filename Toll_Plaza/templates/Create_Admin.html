@@ -1,0 +1,168 @@
+<style>
+    .admin-table,
+    .banned-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #ddd;
+        margin: 0;
+        padding: 0;
+    }
+
+    .admin-table th,
+    .admin-table td,
+    .banned-table th,
+    .banned-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .admin-table th,
+    .banned-table th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    .alert {
+        color: black;
+        font-weight: 500;
+        text-align: center;
+    }
+    .suspended {
+        color: red;
+    }
+
+    .admin{
+        color:#9a5f07;
+    }
+
+    .activate{
+        color:rgb(129, 245, 52);
+    }
+</style>
+
+<div id="CreateAdmin">
+    {% set ns = namespace(found=false, active=true) %}
+    {% if users|length == 0 %}
+    <div class="alert alert-info" role="alert">
+        No Users Found
+    </div>
+    {% else %}
+    <table class="admin-table">
+        <thead>
+            {% if ns.active %}
+            {% set ns.active = false %}
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Admin</th>
+                <th>Suspend</th>
+            </tr>
+            {% endif %}
+        </thead>
+        <tbody>
+            {% for user in users %}
+            {% if not user.suspended %}
+            <tr>
+                <td class="user-name">{{ user.name }}</td>
+                <td class="user-email" id="Emailid">{{ user.email }}</td>
+                <td>
+                    <input class="form-check-input admin-checkbox" type="checkbox" onchange="adminCheckbox(this)" data-email="{{ user.email }}">
+                </td>
+                <td>
+                    <input type="checkbox" class="form-check-input suspend-checkbox" onchange="suspendCheckbox(this)" data-email="{{ user.email }}"
+                        autocomplete="off">
+                </td>
+            </tr>
+            {% else %}
+            {% set ns.found = true %}
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if ns.found %}
+    <div style="padding: 2em; padding-bottom: 0; text-align: center;">
+        <p>Banned Accounts</p>
+    </div>
+    <table class="banned-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Activate</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            {% if user.suspended %}
+            <tr>
+                <td class="user-name">{{ user.name }}</td>
+                <td class="user-email" id="Emailid">{{ user.email }}</td>
+                <td>
+                    <input onchange="activateCheckbox(this)" type="checkbox" class="form-check-input activate-checkbox" data-email="{{ user.email }}"
+                        autocomplete="off">
+                </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    {% endif %}
+</div>
+
+<script>
+   
+    function suspendCheckbox(cur) {
+        var row = cur.parentElement.parentElement;
+        var nameCell = row.querySelector('.user-name');
+        var emailCell= row.querySelector('.user-email');
+        var adminCheck=row.querySelector('.admin-checkbox');
+        if(adminCheck.checked){
+            nameCell.classList.remove('admin');
+            emailCell.classList.remove('admin');
+            adminCheck.checked = false;
+        }
+        if (cur.checked) {
+            nameCell.classList.add('suspended');
+            emailCell.classList.add('suspended');
+        } else {
+            nameCell.classList.remove('suspended');
+            emailCell.classList.remove('suspended');
+        }
+    }
+        
+    function adminCheckbox(cur) {
+        var row = cur.parentElement.parentElement;
+        var nameCell = row.querySelector('.user-name');
+        var emailCell = row.querySelector('.user-email');
+        var suspendCheck = row.querySelector('.suspend-checkbox');
+        if (suspendCheck.checked){
+            nameCell.classList.remove('suspended');
+            emailCell.classList.remove('suspended');
+            suspendCheck.checked = false;
+        }
+
+        if (cur.checked) {
+            nameCell.classList.add('admin');
+            emailCell.classList.add('admin');
+        } else {
+            nameCell.classList.remove('admin');
+            emailCell.classList.remove('admin');
+        }
+    }
+
+    function activateCheckbox(cur) {
+        var row = cur.parentElement.parentElement;
+        var nameCell = row.querySelector('.user-name');
+        var emailCell = row.querySelector('.user-email');
+        if (cur.checked) {
+            nameCell.classList.add('activate');
+            emailCell.classList.add('activate');
+        } else {
+            nameCell.classList.remove('activate');
+            emailCell.classList.remove('activate');
+        }
+    }
+</script>

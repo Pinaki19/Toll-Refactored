@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+    <script  src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   
+    <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.min.css"
+      onload="this.rel='stylesheet'">
+    <link rel="stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/Base.css') }}">
+    <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" onload="this.rel='stylesheet'">
+    {% block Style_local %}{% endblock Style_local %}
+    {% block title %}{% endblock title %}
+    <script src="{{ url_for('static',filename='js/scripts.js') }}"></script>
+
+</head>
+<body {% block onload %}{% endblock onload %} >
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color:#000; ">
+    <div class="container-fluid">
+        <a href="/" class="navbar-brand">Toll System</a>
+        <button aria-label="nav_link" type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
+            <div class="navbar-nav">
+                <a href="/" class="nav-item nav-link active">Home</a>
+                <a href="#" class="nav-item nav-link" id="Profile">Profile</a>
+                <div class="nav-item dropdown">
+                    <a href="#Messages" id='MessagesToggle' class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Help<i class="fa-solid fa-bell fa-bounce fa-md" id="Help_notify" style="padding-left:5px;color:white; display:none;"></i></a>
+                    <div class="dropdown-menu">
+                        <a  class="dropdown-item" data-bs-toggle="modal" data-bs-target="#NotificationsModal">Notifications<i class="fa-solid fa-bell fa-md" id="Notification_notify" style="padding-left:5px;color:blue;display:none;"></i></a>
+                        <a  class="dropdown-item" id='Query' data-bs-toggle="modal" data-bs-target="#ContactModal">Contact us</a>
+                        <a class="dropdown-item" id='FAQS' data-bs-toggle="modal" data-bs-target="#FAQModal" >FAQ</a>
+                        <a class="dropdown-item" id='Resolve' data-bs-toggle="modal" data-bs-target="#ResolveModal" >Resolve Queries<i class="fa-solid fa-bell fa-md" id="Resolve_notify" style="padding-left:5px;color:blue;display:none;"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+           <div class="navbar-nav">
+            {% block navContent %}{% endblock navContent %}
+            <form class="d-flex" style="padding-right: 30px; position: relative;">
+              <div class="input-group" style="padding-top: 5px; padding-right: 20px;">
+                  <input type="text" class="form-control" placeholder="Search" onclick="suggest()"  oninput="suggest()" id="Search_bar" required>
+                <button aria-label="Search button" type="submit" id="Search_btn" class="btn btn-secondary"><i style="position: relative; bottom: 2px;" class="bi-search"></i></button>
+              </div>
+            </form>
+          </div>
+        </div>
+    </div>
+</nav>
+
+<div id="suggestions" class="suggestions"></div>
+
+{% block content%} {% endblock content %}
+<div class="modal fade" id="ContactModal" tabindex="-1" aria-labelledby="ContactModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#f9fae8;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ContactModalLabel">Contact us</h5>
+      </div>
+      <div class="modal-body" id="ContactModalBody" style="padding: 25px;">
+        <form id="contactForm">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="contactemail" name="email" required  oninput="validateForm()">
+          </div>
+          <div class="mb-3">
+            <label for="message" class="form-label">Message</label>
+            <textarea class="form-control" id="contactmessage" name="message" rows="4" required  oninput="validateForm()"></textarea>
+          </div>
+        </form>
+        <div id="Reply1"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"  >Close</button>
+        <button disabled type="submit" class="btn btn-primary" id="SendMessage" onclick="submitContactForm()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="NotificationsModal" tabindex="-1" aria-labelledby="NotificationsModal" aria-hidden="true" >
+  <div class="modal-dialog modal-dialog-centered" style="min-width:40%">
+        <div class="modal-content" style="background:#f9fae8;">
+          <div class="modal-header">
+              <h5 class="modal-title" id="NotificationsModalLabel">All Notifications</h5>
+          </div>
+          <div class="modal-body" id="NotificationsModalBody" style="padding:25px;">
+            <div class="alert alert-info" role="alert" style="font-weight:500;text-align:center;">
+                No New Notifications
+            </div>
+          </div>
+          
+          
+          <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" >Close</button>
+            </div>
+        </div>
+  </div>
+</div>
+
+<div class="modal fade" id="FAQModal" tabindex="-1" aria-labelledby="FAQModalLabel" aria-hidden="true" >
+  <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#f9fae8;">
+          <div class="modal-header">
+              <h5 class="modal-title" id="FAQModalLabel">FAQ</h5>
+          </div>
+          <div class="modal-body" id="FAQModalBody" style="padding:25px;">
+            <div class="alert alert-info" role="alert" style="font-weight:500;text-align:center;">
+                Coming soon..
+            </div>
+          </div>
+          <div id=''></div>
+          
+          <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" >Close</button>
+            </div>
+        </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="ResolveModal" tabindex="-1" aria-labelledby="ResolveModalLabel" aria-hidden="true" >
+  <div class="modal-dialog modal-dialog-centered custom-modal-dialog">
+        <div class="modal-content" style="background:#f9fae8;">
+          <div class="modal-header">
+              <h5 class="modal-title" id="ResolveModalLabel">User Queries</h5>
+          </div>
+          <div class="modal-body" id="ResolveModalBody" style="padding:25px;">
+               
+            
+          </div>
+           <div class="modal-body" id='Warning_element'></div>
+          <div class="modal-footer">
+           
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" >Close</button>
+            </div>
+        </div>
+  </div>
+</div>
+ 
+{% block bodyScripts %}{% endblock bodyScripts %}
+
+<link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+  onload="this.rel='stylesheet'">
+<script async src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type='text/javascript'>
+
+
+$('#ContactModal').on('hidden.bs.modal', function () {
+  // Clear the input fields
+  $('#contactmessage').val('');
+  document.getElementById("Reply1").innerHTML='';
+  $('#SendMessage').prop('disabled', true);
+});
+
+
+var Notify=0;
+
+$(document).ready(function () {
+
+  loadUserQueriesInModal();
+  getEmail()
+    .then(function (data) {
+      if (data) {
+        
+        $('#contactemail').val(data.email);
+        $('#contactemail').prop('readOnly', true);
+        if (!data.is_admin && !data.is_super_admin) {
+            $('#Resolve').remove();
+            $('#ResolveModal').remove();
+        }else{
+          loadPendingQueries();
+        }
+      }else{
+        $('#Resolve').remove();
+        $('#ResolveModal').remove();
+      }
+    })
+    .catch(function (error) {
+      $('#Resolve').remove();
+      $('#ResolveModal').remove();
+      console.error('Error fetching email:', error);
+    });
+});
+
+function loadPendingQueries() {
+  $.ajax({
+    type: "GET",
+    url: "/get_queries",
+    dataType: "json",
+    success: function (response) {
+      var queries = response.queries; 
+      var resolveModalBody = $('#ResolveModalBody');
+      resolveModalBody.empty(); 
+
+      if (queries.length > 0) {
+        document.getElementById("Help_notify").style.display='inline-block';
+        document.getElementById("Resolve_notify").style.display='inline-block';
+        queries.forEach(function (query) {
+          Notify+=1;
+ 
+            var container = document.createElement('div');
+            container.id="container-"+query.query_id;
+            // Create and configure the email paragraph
+            var Referenceid = document.createElement('p');
+            Referenceid.style.padding = "0";
+            Referenceid.style.fontWeight="bold";
+            Referenceid.style.marginTop = "0";
+            Referenceid.style.marginBottom = "5px";
+            Referenceid.textContent = 'ReferenceID: ' + query.query_id;
+
+            var emailParagraph = document.createElement('p');
+            emailParagraph.style.padding = "0";
+            emailParagraph.style.marginTop = "0";
+            emailParagraph.style.marginBottom = "0";
+            emailParagraph.textContent = 'User Email: ' + query.email;
+            
+            // Create and configure the message paragraph
+            var messageParagraph = document.createElement('p');
+            messageParagraph.style.padding = "0";
+            messageParagraph.style.marginTop = "0";
+            messageParagraph.style.marginBottom = "5px";
+            messageParagraph.textContent = 'Query: ' + query.message;
+
+            // Create a div for the response input
+            var responseDiv = document.createElement('div');
+            responseDiv.className = 'mb-3';
+            responseDiv.style.textAlign = 'right';
+
+            // Create and configure the response textarea
+            var responseTextarea = document.createElement('textarea');
+            responseTextarea.className = 'form-control';
+            responseTextarea.id = 'response-' + query.query_id;
+            responseTextarea.rows = 1;
+
+            // Create the "Resolve" button
+            var resolveButton = document.createElement('button');
+            resolveButton.className = 'btn btn-primary resolve-button';
+            resolveButton.setAttribute('data-query-id', query.query_id);
+            resolveButton.disabled = true;
+            resolveButton.style.marginTop = "5px";
+            resolveButton.textContent = 'Resolve';
+
+            // Append elements to the container div
+             container.appendChild(Referenceid);
+            container.appendChild(emailParagraph);
+            container.appendChild(messageParagraph);
+            responseDiv.appendChild(responseTextarea);
+            responseDiv.appendChild(resolveButton);
+            container.appendChild(responseDiv);
+
+            // Append the container to the resolveModalBody
+            resolveModalBody.append(container);
+
+            // Enable the button when input has at least 10 characters
+            $(responseTextarea).on('input', function () {
+              var inputText = $(this).val();
+              if (inputText.length >= 10) {
+                resolveButton.disabled = false;
+              } else {
+                resolveButton.disabled = true;
+              }
+            });
+        });
+         // Add click event listener to the "Resolve" buttons
+        $('.resolve-button').on('click', function() {
+          var queryId = $(this).data('query-id');
+          var inputText = $('#response-' + queryId).val();
+          var warningElement = document.getElementById("Warning_element");
+          // Send AJAX POST request to the "/resolve_queries" endpoint
+          $.ajax({
+            type: "POST",
+            url: "/resolve_queries",
+            data: JSON.stringify({ queryId: queryId, inputText: inputText }),
+            contentType: "application/json",
+            success: function (response) {
+              warningElement.innerHTML = `<div class="alert alert-success" role="alert" style="color:black;font-weight:500;text-align:center;">
+                 Query resolved Successfully
+              </div>`;
+              $('#container-' + queryId).remove();
+              Notify-=1;
+              console.log(Notify);
+              if(Notify==0){
+                document.getElementById("Help_notify").style.display='none';
+                document.getElementById("Resolve_notify").style.display='none';
+              }
+            },
+            error: function (error) {
+              console.error('Error resolving query:', error);
+              warningElement.innerHTML = `<div class="alert alert-danger" role="alert" style="color:black;font-weight:500;text-align:center;">
+                  ${error.responseJSON.message}
+              </div>`;
+            }
+          });
+        });
+      } else {
+        // No pending queries
+        let infoElement=document.createElement('div');
+        infoElement.innerHTML=`<div class="alert alert-info" role="alert" style="color:black;font-weight:500;text-align:center;">
+                 No Pending queries
+              </div>`;
+        resolveModalBody.append(infoElement);
+      }
+    },
+    error: function (error) {
+      console.error('Error fetching queries:', error);
+      resolveModalBody.append(`<div class="alert alert-danger" role="alert" style="color:black;font-weight:500;text-align:center;">
+                Unauthorized Access
+            </div>`);
+    }
+  });
+}
+
+$(document).on('click', function (event) {
+  var suggestionsContainer = $('#suggestions');
+  var searchBar = $('#Search_bar');
+  var searchButton = $('#Search_btn'); // Add the search button element
+
+  // Check if the click target is the search bar or suggestions container or their descendants
+  if (
+    !suggestionsContainer.is(event.target) &&
+    !searchBar.is(event.target) &&
+    !searchButton.is(event.target) && // Check if the target is the search button
+    suggestionsContainer.has(event.target).length === 0 &&
+    searchBar.has(event.target).length === 0
+  ) {
+    // Clicked outside of both search bar and suggestions container
+    clearSuggestions(); // Hide the suggestions
+  }
+});
+
+
+
+
+$('#Search_btn').on('click', function () {
+      search($('#Search_bar').val());
+     
+});
+
+
+// Call the loadPendingQueries function when the modal is shown
+$('#ResolveModal').on('show.bs.modal', function () {
+  document.getElementById('Warning_element').innerHTML=`<div class="alert alert-info" role="alert" style="font-weight:500;text-align:center;">
+                Queries will be marked as resolved upon submission
+            </div>`;
+  
+});
+
+$('#NotificationsModal').on('show.bs.modal', function () {
+    if(New_notifications){
+      document.getElementById("Help_notify").style.display='none';
+      document.getElementById("Notification_notify").style.display='none';
+      $.ajax({
+        type: "GET",
+        url: "/mark_visited", // Replace with the actual URL
+        success: function (response) {
+          null;
+        },
+        error: function (error) {
+            // Handle any errors that occur during the AJAX request
+            console.error("Error marking notifications as visited! ");
+          
+        }
+      });
+    }
+});
+
+var New_notifications;
+
+function loadUserQueriesInModal() {
+  $.ajax({
+    type: 'GET',
+    url: '/get_user_queries',
+    dataType: 'json',
+    success: function (data) {
+      var modalBody = $('#NotificationsModalBody'); // Replace with the actual modal body element
+      let visited = data.visited;
+      if (!visited) {
+        document.getElementById("Help_notify").style.display = 'inline-block';
+        document.getElementById("Notification_notify").style.display = 'inline-block';
+      }
+      data = data.queries;
+      if (data.length > 0) {
+        New_notifications = true;
+        // Clear the modal body
+        modalBody.empty();
+
+        data.forEach(function (query) {
+          var id = query.query_id;
+          var time = new Date(query.query_time).toString();
+          var question = query.message;
+          var response = query.response;
+          const gmtIndex = time.indexOf('GMT');
+
+          // Erase everything from "GMT" onwards
+          const formattedTime = time.substring(0, gmtIndex).trim();
+
+          // Append "(IST)"
+          const result = `${formattedTime} (IST)`;
+          // Create a container for each question and response
+          var container = $('<div>');
+
+          // Create elements for the ID, time, question, and response
+          var idElement = $('<p style="padding-bottom:6px;padding-top:0;margin:0;">').text('Query ID: ' + id);
+          var timeElement = $('<p style="padding-bottom:6px;padding-top:0;margin:0;">').text('Resolved On: ' + result);
+          var questionElement = $('<p style="padding-bottom:6px;padding-top:0;margin:0;">').text('Question: ' + question);
+          var responseElement = document.createElement('div');
+          responseElement.innerHTML = `<textarea style="margin:0;padding-top:3px;padding-bottom:3px;" class="form-control" readOnly>${response}</textarea> <hr style="padding:0;margin-top:8px;margin-bottom:8px;">`;
+
+          // Append the elements to the container
+          container.append(idElement);
+          container.append(timeElement);
+          container.append(questionElement);
+          container.append(responseElement);
+          // Append the container to the modal body
+          modalBody.append(container);
+        });
+
+      } else {
+        New_notifications = false;
+      }
+    },
+    error: function (error) {
+      console.error('Error fetching user queries:', error);
+      // Handle the error as needed
+    }
+  });
+}
+</script>
+<footer class="py-3 bg-dark">
+    <div class="container px-4 px-lg-5">
+        <div class="text-center text-white">
+            <p class="m-0">Smooth Sailing 2023-2024</p>
+            <p class="m-0">&copy; PINAKI BANERJEE <a class="text-white" data-bs-toggle="modal" data-bs-target="#ContactModal" style="cursor:pointer;">Contact us</a></p>
+        </div>
+    </div>
+</footer>
+
+</body>
+
+{% block scripts %}
+
+{% endblock scripts %}
+
+{% block ModuleSignup %}
+
+
+{% endblock ModuleSignup %}
+
+{% block ModuleLogin %}{% endblock ModuleLogin %}
+
+
+</html>

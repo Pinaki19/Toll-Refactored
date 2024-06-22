@@ -1,0 +1,810 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Gateway</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.min.css">
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+   <link  type= "text/css" href="{{ url_for('static',filename='css/otp-input.css') }}" rel="stylesheet">
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="{{ url_for('static',filename='js/Payment.js') }}"></script>
+    <script src="{{ url_for('static',filename='js/Allpayments.js') }}"></script>
+    <script src="https://unpkg.com/pdf-lib"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <link rel="stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/Payment.css') }}">
+    <style>
+       
+        body{
+            background-color:#bdf772;
+            min-width:550px;
+            min-height:700px;
+            height:100%;
+            justify-content:center;
+            margin:auto;
+            display:flex;
+            flex-direction:column;
+        }
+            #Cards{
+                display:flex;
+                flex-direction:column;
+                min-width:300px;
+            .logo-brand {
+                font-size: 10px;
+            }
+
+            .icon-height {
+                height: 24px;
+                width: 24px;
+            }
+
+            .pic {
+                height: 38px;
+                width: 38px;
+            }
+
+            
+
+            .card {
+                height: auto;
+                width: auto;
+                min-width:240px;
+            }
+
+            
+            #tags {
+                font-size: 22px;
+            }
+
+            .card4 {
+                background: linear-gradient(45deg, #736DE0, #AC6DF5, #736DE0);
+            }
+            .card2 {
+                background-color: #0093E9;
+                background-image: linear-gradient(160deg, #0093E9 0%, #80D0C7 100%);
+                
+            }
+            .card3 {
+                background: linear-gradient(45deg,#5e55dd, #72cc8a, #02bde3);
+            }
+            .card1{
+                background-color: #21D4FD;
+                background-image: linear-gradient(116deg, #21D4FD 0%, #B721FF 100%);
+                
+            }
+            .card5{
+                background: linear-gradient(45deg, #DB6B80, #F4857F, #DB6B80);
+            }
+            .card6 {
+                background: linear-gradient(#DE6262, #FFB88C);
+            }
+            .card7 {
+            background: linear-gradient(#ED4264, #FFEDBC);
+            color:bule;
+            }
+            .card8 {
+                background: linear-gradient(#7474BF, #348AC7);
+            }
+            .card9 {
+                background: linear-gradient(#EC6F66, #F3A183);
+            }
+            .card10 {
+                background: linear-gradient(#C04848, #480048);
+            }
+            .card11 {
+                background: linear-gradient(#e43a15, #e65245);
+            }
+            .card12 {
+                background: linear-gradient(#414d0b, #727a17);
+            }
+            .card13 {
+                background: linear-gradient(#FC354C, #0ABFBC);
+            }
+            .card14 {
+                background: linear-gradient(#f857a6, #ff5858);
+            }
+            .card15 {
+                background: linear-gradient(#d53369, #cbad6d);
+            }
+            .card16 {
+                background: linear-gradient(45deg,#5e55dd, #72cc8a, #02bde3);
+            }
+
+            @media screen and (max-width: 1200px) {
+                .card-scroll {
+                    /* display: grid; */
+                    grid-auto-flow: column;
+                    gap: 1rem;
+                    /* overflow-x: auto; */
+                    overscroll-behavior-inline: contain;
+                }
+
+                #tags {
+                    font-size: 18px;
+                }
+            }
+            .card-buttons {
+                position: absolute;
+                top: 70%;
+                right:10%;
+                overflow:hidden;
+            }
+            .card-buttons button{
+                background:white;
+                padding-left:5px !important;
+                padding-right:5px !important;
+                padding-top:0px !important;
+                padding-bottom:0px !important;
+            }
+            
+            
+        }
+    
+    </style>
+</head>
+
+<body style="background:linear-gradient(#B3FFAB,#12FFF7);" onload="load_cards()">
+    <div class="container py-2">
+       
+        <div class="row">
+           
+            <div class="col-lg-7 ax-auto" >
+                <div class="card " style="min-width:600px;">
+                     
+                    <div class="card-header" style="min-height:400px;">
+                        
+                        <div class="bg-white shadow-sm pt-4 pl-2 pr-2 pb-2">
+                            <!-- Credit card form tabs -->
+                            <ul role="tablist" class="nav bg-light nav-pills rounded nav-fill mb-3">
+                                
+                                <li class="nav-item"> <a data-toggle="pill" href="#paypal" class="nav-link active "> <i class="bi bi-wallet2"></i> Wallet </a> </li>
+                                <li class="nav-item"> <a data-toggle="pill" href="#credit-card"
+                                        class="nav-link "> <i class="fas fa-credit-card mr-2"></i> Card
+                                    </a> </li>
+                                <li class="nav-item"> <a data-toggle="pill" href="#net-banking" class="nav-link "> <i
+                                            class="fas fa-mobile-alt mr-2"></i> Net Banking </a> </li>
+                            </ul>
+                        </div> <!-- End -->
+                        <!-- Credit card form content -->
+                        <div class="tab-content">
+                            <!-- credit card info-->
+                            <div id="credit-card" class="tab-pane fade  pt-3">
+                            <div class="d-felx col-7 flex-wrap flex-row" style='padding-left:3em; max-width:550px;' id="Cards"  >
+                               
+                                
+                            </div>
+                                    <p style="text-align:center"> </p>
+                                    <div style="text-align:right">
+                                    </div>
+                                    <h5 style="text-align:center">Click on a card to proceed faster or Use new</h5>
+                                    <hr>
+                                <form role="form" onsubmit="check_add()" >
+                                    <div class="form-group"> <label for="username">
+                                            <h6>Card Owner</h6>
+                                        </label> <input type="text" id="Username" name="username" placeholder="Card Owner Name"
+                                            required="required" class="form-control " autocomplete="username"> </div>
+                                    <div class="form-group"> <label for="cardNumber">
+                                            <h6>Card number</h6>
+                                        </label>
+                                        <div class="input-group"> <input type="text" name="cardNumber" id="cardNumber" 
+                                                placeholder="Valid card number" class="form-control " required="required">
+                                            <div class="input-group-append"> <span class="input-group-text text-muted" id="all_cards">
+                                                        <i class="fab fa-cc-visa mx-1"  style="color:blue;"></i> 
+                                                        <img src="/static/Assets/icons/rupay.png" alt="RuPay" class="mx-1" style="width: 40px; height: 30px;"> <!-- RuPay (Custom Icon/Image) -->
+                                                        <i class="fab fa-cc-amex mx-1" style="color:#0394fc;"></i> 
+                                                        <i class="fab fa-cc-jcb mx-1" style="color: #FF4500;"></i> <!-- JCB -->
+                                                        <i class="fab fa-cc-interac mx-1" style="color: #FFD700;"></i> <!-- Interac -->
+                                                        <img src="/static/Assets/icons/discover.png" alt="discover" class="mx-1" style="width: 40px; height: 30px;">
+                                                        <img src="/static/Assets/icons/jcb.png" alt="JCB" class="mx-1" style="width: 40px; height: 30px;">
+                                                        <img src="/static/Assets/icons/dankort.png" alt="Dankort" class="mx-1" style="width: 40px; height: 30px;">    
+                                                        <img src="/static/Assets/icons/diners.png" alt="diners" class="mx-1" style="width: 40px; height: 30px;">
+                                                        <img src="/static/Assets/icons/unionpay.png" alt="UnionPay" class="mx-1" style="width: 40px; height: 30px;"> <!-- UnionPay (Custom Icon/Image) -->
+                                                        <img src="/static/Assets/icons/mastercard.png" alt="Mastercard" class="mx-1" style="width: 40px; height: 30px;"> <!-- Electron (Custom Icon/Image) -->
+                                                        <img src="/static/Assets/icons/maestro.png" alt="UnionPay" class="mx-1" style="width: 40px; height: 30px;"> 
+                                                        <img src="/static/Assets/icons/electron.png" alt="Electron" class="mx-1" style="width: 40px; height: 30px;"> <!-- Electron (Custom Icon/Image) -->
+                                                    </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-8">
+                                            <div class="form-group"> <label><span class="hidden-xs">
+                                                        <h6>Expiration Date</h6>
+                                                    </span></label>
+                                                <div class="input-group"> <input type="number" id="expirationMonth" placeholder="MM" name=""
+                                                        class="form-control" required="required"> <input type="number" id="expirationYear"
+                                                        placeholder="YY" name="" class="form-control" required="required">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="form-group mb-4"> <label data-toggle="tooltip" title=""
+                                                    data-original-title="Three digit CV code on the back of your card">
+                                                    <h6>CVV <i class="fa fa-question-circle d-inline"></i></h6>
+                                                </label> <input type="number" id="cvvInput" required="required" class="form-control"> </div>
+                                            </div>
+                                    </div>
+                                    <div class="form-group" style="text-align:center;">
+                                        <label class="checkbox-inline" style="font-weight:bold;font-family:times-new-roman; " ><input type="checkbox" id="Save_card" >&nbsp Save for future Use</label>
+                                    </div>
+                                    <div class="card-footer"> 
+                                        <button type="submit"
+                                            class="subscribe btn btn-primary btn-block shadow-sm" id="Payment_proceed" > Confirm Payment</button>
+
+                                    </div>
+                                </form>
+                            </div> <!-- End -->
+
+
+                            <!-- Paypal info -->
+                            <div id="paypal" class="tab-pane fade show active pt-3 my-auto" style="padding-left:20px; ">
+                                <div style= "padding-top:10px;">
+                                <p><strong>Balance</strong> : {{wallet.balance}}</p>
+                                {%if wallet.Logged_in %}
+                                <div id="PIN" >
+                                <div id="otp-input" class="font-h2-strong" style="justify-content:center;">
+                                    <input class="font-h2-strong" placeholder="_" type="number" step="1" min="0" max="9" autocomplete="no" pattern="\d*" />
+                                    <input class="font-h2-strong" placeholder="_" type="number" step="1" min="0" max="9" autocomplete="no" pattern="\d*" />
+                                    <input class="font-h2-strong" placeholder="_" type="number" step="1" min="0" max="9" autocomplete="no" pattern="\d*" />
+                                    <input class="font-h2-strong" placeholder="_" type="number" step="1" min="0" max="9" autocomplete="no" pattern="\d*" />
+                                    
+                                    <input id="otp-value" placeholder="_" type="hidden" name="otp" />
+                                    
+                                </div>
+                                
+                            </div>
+                            {%endif%}
+                                {%if wallet.Logged_in %}
+                                    <h6 style="padding-top:15px;" class="pb-2">Enter PIN to proceed with Your Wallet</h6>
+                                    <p class="text-muted"> Always keep enough balace in your wallet, that way you can complete payments faster ! </p>
+                                    {%if PaymentInfo.type=='add money' %}
+                                    <div style="text-align:center;">  <button disabled type="button" id='submit' class="btn btn-primary "><i class="bi bi-wallet2"></i>
+                                            Not Usable</button> </div>
+                                    {% elif wallet.balance<(PaymentInfo.amount+PaymentInfo.gst_applied-PaymentInfo.coupon_disc-PaymentInfo.global_disc) %}
+                                        <div style="text-align:center;">  <button disabled type="button" id='submit' class="btn btn-primary "><i class="bi bi-wallet2"></i>
+                                            Insufficient Balance</button> </div>
+                                    {% else %}
+                                    <div style="text-align:center;"> <button type="submit" id='submit' class="btn btn-primary "><i class="bi bi-wallet2"></i>
+                                        Proceed </button> </div>
+                                    {%endif%}
+                                {%else%}
+                                        <p id="otp-input" ></p>
+                                        <p id="submit"></p>
+                                        <p class="text-muted"> You are not Logged in, Wallet not usable. Use card payment or Log In Instead! </p>
+                                {%endif%}
+                                </div>
+                                
+                            </div> <!-- End -->
+                            <!-- bank transfer info -->
+                            <div id="net-banking" class="tab-pane fade pt-3">
+                                <div class="form-group "> <label for="Select Your Bank">
+                                        <h6>Select your Bank</h6>
+                                    </label> <select class="form-control" id="ccmonth">
+                                        <option value="" selected="" disabled="">--Please select your Bank--</option>
+                                        <option>Bank 1</option>
+                                        <option>Bank 2</option>
+                                        <option>Bank 3</option>
+                                        <option>Bank 4</option>
+                                        <option>Bank 5</option>
+                                        <option>Bank 6</option>
+                                        <option>Bank 7</option>
+                                        <option>Bank 8</option>
+                                        <option>Bank 9</option>
+                                        <option>Bank 10</option>
+                                    </select> </div>
+                                <div class="form-group">
+                                    <p> <button disabled type="button" class="btn btn-primary "><i
+                                                class="fas fa-mobile-alt mr-2"></i> Coming soon...</button> </p>
+                                </div>
+                                <p class="text-muted">Note: After clicking on the button, you will be directed to a
+                                    secure gateway for payment. After completing the payment process, you will be
+                                    redirected back to the website to view details of your order. </p>
+                            </div> <!-- End -->
+                            <!-- End -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+      
+            <div class="col-lg-5 mx-auto my-auto d-flex flex-column" style="border:2px solid black;padding:20px;border-radius:15px;background:linear-gradient(#232526,#414345);color:white;;" id="Payment-Details">
+                <span class="d-flex flex-column flex-wrap" style="margin:0;padding:20px;">
+                    <div id="paymentDetails">
+                        <h5>Complete Your Payment for {{PaymentInfo.type}}</h5>
+                        <div class="d-flex flex-row align-items-flex-start" style="padding:10px;">
+                            <div class="col-md-6" >
+                                <p><strong>Payment Amount:</strong></p>
+                                <p><strong>GST (Tax):</strong> </p>
+                                <p><strong>Coupons Applied:</strong></p>
+                                <p><strong>Total Amount:</strong> </p>
+                            </div>
+                            <div class="col-md-2 p-0" id="paymentInfo">
+                                <p >&#8377;{{PaymentInfo.amount-PaymentInfo.global_disc}}</p>
+                                <p >&#8377;{{ PaymentInfo.gst_applied }}</p>
+                                <p id="paymentInfoCupon">&#8377;{{ PaymentInfo.coupon_disc }}</p>
+                                <p id="paymentInfoTotal">&#8377;{{PaymentInfo.amount+PaymentInfo.gst_applied-PaymentInfo.coupon_disc-PaymentInfo.global_disc}}</p>
+                            </div>
+                        </div>
+                        {%if PaymentInfo.type!='add money'%}
+                        <label for="couponCode">Apply Cupon &nbsp</label>
+                        <input type="text" id="cuponCode" placeholder="Enter coupon code">
+                        <div style="text-align:right; margin-top:5px;">
+                            <!-- Apply Coupon Button -->
+                            <button id="applyCoupon" class="btn btn-floating" onclick='Check_and_apply()'>Apply</button>
+                        </div>
+                        {%endif%}
+                    </div>
+                </span>
+
+                   
+            </div>
+           
+        </div>
+    </div>
+    
+
+    <!-- Payment Processing Modal -->
+   <div class="modal fade" id="PaymentModal" tabindex="-1" role="dialog" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" >
+            <div class="modal-content">
+                
+                <div class="modal-body mx-auto d-flex flex-column" id="Payment_body" style="align-self:center;justify-content:center; min-height:440px;">
+                     <h5>Please wait while we process your payment</h5>
+                    <p>Do not press back, reload, or refresh the page!</p>
+                <div class="loader"></div>
+                <!-- Success content (hidden initially) -->
+                <div id="successContent" style="display: none;">
+                    <svg width="200" height="200">
+                        <circle fill="none" stroke="#68E534" stroke-width="10" cx="100" cy="100" r="95" class="circle" stroke-linecap="round" transform="rotate(-90 100 100)"/>
+                        <polyline fill="none" stroke="#68E534" stroke-width="12" points="43,100 83,140 157,66" stroke-linecap="round" stroke-linejoin="round" class="tick" />
+                    </svg>
+                    <h2 style="text-align:center;">Payment Success</h2>
+                    <p id="Payment_id"> Reference No: </p>
+                    <div id="Query_text">
+                        <p > For any queries get back to us with this reference no.</p>
+                        <p class="text-muted">Note it if necessary. You will shortly be redirected to home page.</p>
+                    </div>
+                    
+                </div>
+
+                <div id="failureContent" style="display: none;">
+                <!-- Failure content with a red cross icon -->
+                <svg width="200" height="200">
+                    <circle  fill="none" stroke="#FF0000" stroke-width="10" cx="100" cy="100" r="95" class="circle" stroke-linecap="round" transform="rotate(-90 100 100)"/>
+                     <line x1="70" y1="70" x2="130" y2="130" stroke="#FF0000" stroke-width="10" stroke-linecap="round" />
+                    <line x1="70" y1="130" x2="130" y2="70" stroke="#FF0000" stroke-width="10" stroke-linecap="round" />
+                </svg>
+                <h2 style="text-align:center; color: #383131;padding-top:15px;">Payment Failed</h2>
+                <div id="Query_text">
+                    <p id="Reason" style="padding-top:10px;"></p>
+                </div>
+            </div>
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+            <script src="{{ url_for('static',filename='js/otp-input.js') }}"></script>
+            <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+            <!-- Move these scripts to the bottom of the body section -->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js"></script>
+            <link src="https://use.fontawesome.com/releases/v5.8.1/css/all.css" rel="stylesheet">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+            <script type="text/javascript">$(function () {
+                    $('[data-toggle="tooltip"]').tooltip()
+                })</script>
+            <script type="text/javascript">
+                var myLink = document.querySelectorAll('a[href="#"]');
+                myLink.forEach(function (link) {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                    });
+                });
+
+         function fetchPaymentReference() {
+            $.ajax({
+                type: 'GET',
+                url: '/get_payment_id', // Replace with the actual URL
+                success: function (data) {
+                    //console.log('AJAX success:', data);
+                    // Update the payment reference in the success content
+                    var message= data.message;
+                    if(!data.Login){
+                        message = message + "   As You are not Logged in, a Receipt will be downloaded.";
+                        downloadTransactionAsPDF(data,'',false);
+                    }
+                       
+                    $('#Payment_id').text('Reference No: ' + message);
+                },
+                error: function (error) {
+                    console.log('AJAX error:', error);
+                    console.log('Failed to fetch payment reference.');
+                }
+            });
+        }
+
+function Complete() {
+        // Show the initial content
+        
+        $('#Payment_body').html($('#Payment_body > div:first-child').html());
+
+        // After 5 seconds, switch to the success content
+        setTimeout(function () {
+            fetchPaymentReference();
+            $('#Payment_body').html($('#successContent').html());
+        }, 5000);
+        setTimeout(function () {
+           location.href='/';
+        }, 14000);
+    }
+
+
+        $("#cardNumber").on("keydown", function(e) {
+            var cursor = this.selectionStart;
+            if (this.selectionEnd != cursor) return;
+            if (e.which == 46) {
+                if (this.value[cursor] == " ") this.selectionStart++;
+            } else if (e.which == 8) {
+                if (cursor && this.value[cursor - 1] == " ") this.selectionEnd--;
+            }
+            }).on("input", function() {
+                if(this.value.length==19){
+                $("#expirationMonth").focus();
+            }
+            var value = this.value;
+            var cursor = this.selectionStart;
+            var matches = value.substring(0, cursor).match(/[^0-9]/g);
+            if (matches) cursor -= matches.length;
+            value = value.replace(/[^0-9]/g, "").substring(0, 16);
+            var formatted = "";
+            for (var i=0, n=value.length; i<n; i++) {
+                if (i && i % 4 == 0) {
+                    if (formatted.length <= cursor) cursor++;
+                    formatted += " ";
+                }
+                formatted += value[i];
+            }
+            if (formatted == this.value) return;
+            this.value = formatted;
+            this.selectionEnd = cursor;
+            console.log(value.length);
+            
+        });
+
+        $(document).ready(function () {
+            $("#all_cards img").hide();
+
+        $("#expirationMonth, #expirationYear").on("input", function () {
+            var input = $(this);
+            var value = input.val().replace(/\D/g, "").slice(0, 2);
+            input.val(value);
+
+            if (value.length === 2 && this.id === "expirationMonth") {
+                $("#expirationYear").focus();
+            }
+            if(value.length === 2 && this.id === "expirationYear"){
+                $("#cvvInput").focus();
+            }
+        });
+
+        $("#cvvInput").on("input", function () {
+            var input = $(this);
+            var cvv = input.val().replace(/\D/g, "").slice(0, 3);
+            input.val(cvv);
+
+            
+        });
+    });
+
+        // Function to detect and update the card icons
+    $(document).ready(function () {
+        $("#all_cards img[src='/static/Assets/icons/rupay.png']").show();
+    // Function to detect and update the card icons
+    function updateCardIcons(cardType) {
+        // Hide all card icons except for Visa, Mastercard, and American Express
+        $("#all_cards i").hide();
+        $("#all_cards img").hide();
+        
+      
+        // Show the specific card icon based on the detected card type
+        if (cardType === "visa") {
+            $("#all_cards i.fa-cc-visa").show();
+        } else if (cardType === "mastercard") {
+            $("#all_cards img[src='/static/Assets/icons/mastercard.png']").show();
+        } else if (cardType === "amex") {
+            $("#all_cards i.fa-cc-amex").show();
+        } else if (cardType === "unionpay") { // Show UnionPay custom icon/image
+            $("#all_cards img[src='/static/Assets/icons/unionpay.png']").show();
+        } else if (cardType === "rupay") { // Show RuPay custom icon/image
+            $("#all_cards img[src='/static/Assets/icons/rupay.png']").show();
+        } else if (cardType === "maestro") { // Show RuPay custom icon/image
+            $("#all_cards img[src='/static/Assets/icons/maestro.png']").show();
+        } else if (cardType === "jcb") { // Show RuPay custom icon/image
+            $("#all_cards img[src='/static/Assets/icons/jcb.png']").show();
+        } else if (cardType === "electron") { // Show Electron custom icon/image
+            $("#all_cards img[src='/static/Assets/icons/rupay.png']").show();
+        } else if (cardType === "dankort") { // Show Electron custom icon/image
+            $("#all_cards img[src='/static/Assets/icons/dankort.png']").show();
+        }
+        else if (cardType === "diners") { // Show Electron custom icon/image
+            $("#all_cards img[src='/static/Assets/icons/diners.png']").show();
+        } else if (cardType === "discover") { // Show Electron custom icon/image
+            $("#all_cards img[src='/static/Assets/icons/discover.png']").show();
+        } 
+         else{
+            $("#all_cards i").show();
+        }
+        // Add additional conditions for other card types as needed
+    }
+        // Event listener for input changes in the card number field
+            $("#cardNumber").on("input", function () {
+                // Get the card number input value
+                var cardNumber = $(this).val().replace(/\s/g, "");
+
+                // Call the detectCardType function and get the card type
+                var cardType = detectCardType(cardNumber).type;
+              
+                // Update the displayed card icons based on the detected card type
+                updateCardIcons(cardType);
+            });
+});
+
+
+
+
+
+            // Event listener for input changes in the card number field
+        $("#cardNumber").on("input", function () {
+            // Get the card number input value
+            var cardNumber = $(this).val().replace(/\s/g, "");
+            var val_card_lengths = [12, 13, 14, 15, 16, 17, 18, 19];
+            // Call the detectCardType function and get card type information
+            var cardTypeInfo = detectCardType(cardNumber);
+            if(val_card_lengths.includes(cardNumber.length) && cardTypeInfo.type==="unknown"){
+                alert("Unprocessable card!");
+                $(this).val('');
+                return;
+            }
+            // Check if the card type uses Luhn validation and has a valid length
+            if (cardTypeInfo.usesLuhn && cardTypeInfo.isValidLength) {
+                // Perform Luhn validation
+                var isluhnValid = isLuhnValid(parseInt(cardNumber));
+
+                // If the card is not Luhn valid, show an alert
+                if (!isluhnValid) {
+                    alert("Invalid card number. Please check and try again.");
+                    
+                    return; // Exit early, do not proceed with payment
+                }
+            }
+
+            // Continue with payment processing logic here
+            // You can access the card type using cardTypeInfo.type
+                });
+
+                function showPaymentCompleteModal() {
+                    $('#PaymentModal').modal('show');
+                    Complete();
+                }
+
+                function payWithWallet(){
+                    $('#PaymentModal').modal('show');
+                    walletComplete();
+                }
+                function PaymentFailure(){
+                    $('#PaymentModal').modal('show');
+                    
+                }
+
+
+                
+
+function walletComplete() {
+    // Show the initial content
+    $('#Payment_body').html($('#Payment_body > div:first-child').html());
+
+    // After 5 seconds, switch to the success content
+    setTimeout(function () {
+            fetch('/update_user_wallet') // Replace '12345' with your actual payment ID
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                // Payment ID found, access the message
+                fetchPaymentReference();
+                $('#Payment_body').html($('#successContent').html());
+                    setTimeout(function () {
+                        location.href='/';
+                    }, 6000);
+                } else {
+                // Payment ID not found or other failure, access the error message
+                $('#Payment_body').html($('#failureContent').html());
+                    const errorMessage = data.message;
+                    console.error('Error:', errorMessage);
+                    $('#Reason').text(data.message);
+                    setTimeout(function () {
+                        location.reload();
+                    }, 6000);
+                // Handle the error message
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                $('#Payment_body').html($('#failureContent').html());
+                $('#Reason').text(data.message);
+                setTimeout(function () {
+                        location.reload();
+                }, 6000);
+            });
+
+    }, 5000);
+    
+
+    
+}
+
+
+
+    async function downloadTransactionAsPDF(data,email,email_set) {
+        
+        // Create a new PDF document
+        const pdfDoc = await PDFLib.PDFDocument.create();
+
+        // Add a page to the document
+        const page = pdfDoc.addPage([600, 500]);
+
+        // Set up a font for text rendering
+        const helveticaFont = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+
+        // Embed the favicon image (replace 'favicon.ico' with the actual image URL)
+        const imageBytes = await fetch('favicon.png').then((res) => res.arrayBuffer());
+        const image = await pdfDoc.embedPng(imageBytes);
+        page.drawImage(image, {
+            x: 100,
+            y: 420,
+            width: 50,
+            height: 50,
+        });
+
+        // Add the header with company name and contact email
+        page.drawText('Smooth Sailing Systems', {
+            x: 170,
+            y: 450,
+            size: 18,
+            font: helveticaFont,
+            color: PDFLib.rgb(0, 0, 0), // Black color
+        });
+
+        page.drawText(`Contact Email: smoothsailingsystems@gmail.com`, {
+            x: 170,
+            y: 430,
+            size: 12,
+            font: helveticaFont,
+            color: PDFLib.rgb(0, 0, 0),
+        });
+
+        // Add an HR to separate the header and body
+        page.drawLine({
+            start: { x: 50, y: 410 },
+            end: { x: 550, y: 410 },
+            thickness: 1,
+            color: PDFLib.rgb(0, 0, 0),
+        });
+
+        page.drawText('Transaction Receipt', {
+            x: 210,
+            y: 380,
+            size: 16,
+            font: helveticaFont,
+            color: PDFLib.rgb(0, 0, 0), // Black color
+        });
+        // Add the email in the body
+        if(email_set){
+            page.drawText(`User Email: ${email}`, {
+                x: 60,
+                y: 330,
+                size: 12,
+                font: helveticaFont,
+                color: PDFLib.rgb(0, 0, 0),
+            });
+        }
+        
+        /*
+        const time = new Date(DateTime);
+        time.setMinutes(time.getMinutes() - 330);
+        const formattedDate = time.toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+        });*/
+        const now = new Date();
+
+        const formattedNow = now.toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+        });
+        
+        // Create a table for transaction data in the body
+        const transaction_time= new Date(data.expire_time).toString();
+        console.log(transaction_time)
+        const table = [
+            ['Payment Type', data.type],
+            ['Reference Number', data.id],
+            ['Transaction Date & Time', transaction_time ],
+            ['Amount', data.amount.toString()],
+            ['Coupon Discount', data.coupon_disc.toString()],
+            ['Preapplied Discount', data.global_disc.toString()],
+            ['GST (Tax)', data.gst_applied.toString()],
+            ['Total', String((data.amount - data.coupon_disc - data.global_disc + data.gst_applied).toFixed(2))],
+        ];
+
+        const tableX = 50;
+        const tableY = 310;
+        const cellMargin = 20;
+        const rowHeight = 20;
+        const colWidth = 200;
+
+        for (let i = 0; i < table.length; i++) {
+            for (let j = 0; j < table[i].length; j++) {
+                page.drawText(table[i][j], {
+                    x: tableX + j * colWidth + cellMargin,
+                    y: tableY - i * rowHeight - cellMargin,
+                    size: 12,
+                    font: helveticaFont,
+                    color: PDFLib.rgb(0, 0, 0),
+                });
+            }
+        }
+
+        page.drawLine({
+            start: { x: 50, y: 50 },
+            end: { x: 550, y: 50 },
+            thickness: 1,
+            color: PDFLib.rgb(0, 0, 0),
+        });
+
+        // Add the footer
+        page.drawText('Contact us in case of any discrepancy', {
+            x: 80,
+            y: 35,
+            size: 10,
+            font: helveticaFont,
+            color: PDFLib.rgb(0, 0, 0),
+        });
+
+        page.drawText('At ' + formattedNow.toString(), {
+            x: 390,
+            y: 35,
+            size: 10,
+            font: helveticaFont,
+            color: PDFLib.rgb(0, 0, 0),
+        });
+
+        // Serialize the PDF document to bytes
+        const pdfBytes = await pdfDoc.save();
+
+        // Convert the bytes to a Blob
+        const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+        // Create a save popup without automatic download
+        saveAs(pdfBlob, `${'Receipt:' + data.id}.pdf`);
+    }
+
+
+</script>
+<script>
+    var PaymentInfo = {{ PaymentInfo | tojson | safe }};
+</script>
+</body>
+
+</html>

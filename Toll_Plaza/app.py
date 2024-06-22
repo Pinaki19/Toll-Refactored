@@ -14,7 +14,6 @@ from jinja2 import Environment
 IST = timezone('Asia/Kolkata')
 from __init__ import create_app,db
 import psycopg2
-
 app = create_app()
 
 CORS(app)
@@ -31,6 +30,7 @@ def format_ist(datetime_str):
     return formatted_time
 
 app.jinja_env.filters['format_ist'] = format_ist
+
 #-------------------------------------------- User Account -------------------------------------------------------
 @app.get('/get_recent_transactions')
 def get_recent_transactions():
@@ -561,10 +561,6 @@ def get_queries():
     return jsonify({'queries':queries})
 
 
-
-
-
-#TODO
 @app.route('/resolve_queries', methods=['POST'])
 def resolve_user_queries():
     if not check_user():

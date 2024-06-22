@@ -1,0 +1,61 @@
+
+<style>
+    .transactions-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #ddd;
+        margin: 0;
+        padding: 0;
+    }
+
+    .transactions-table th,
+    .transactions-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .transactions-table th {
+        background-color: #ffffff;
+        font-weight: bold;
+    }
+
+    .no-transactions {
+        text-align: center;
+        justify-self: center;
+        font-weight: 500;
+        text-align: center;
+    }
+</style>
+
+<table class="transactions-table" id="RecentTransactions">
+    {% if recent_transactions|length == 0 %}
+    <tr>
+        <td colspan="3">
+            <div class="alert alert-info no-transactions" role="alert">
+                No recent Transactions Found
+            </div>
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <th>Type</th>
+        <th>Amount</th>
+        <th>When</th>
+    </tr>
+    {% for transaction in recent_transactions %}
+    <tr>
+        <td>
+            <span style="color: {{ transaction.color }};">{{ transaction.type }}</span>
+        </td>
+        <td>
+            <span style="color: {{ transaction.color }};">{{ transaction.sign }}&#8377;{{ transaction.amount }}</span>
+        </td>
+        <td>
+            <span>{{ transaction.complete_time|format_ist }}</span>
+        </td>
+    </tr>
+    {% endfor %}
+    {% endif %}
+</table>
+

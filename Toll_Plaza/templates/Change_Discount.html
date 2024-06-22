@@ -1,0 +1,46 @@
+<style>
+  .discounts-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #ddd;
+        margin: 0;
+        padding: 0;
+    }
+  
+  .discounts-table th,
+  .discounts-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+
+  .dicounts-table th {
+    background-color: #ffffff;
+    font-weight: bold;
+  }
+</style>
+
+
+<div id="DiscountsBody">
+<div id="Discounts"  >
+    <table class="discounts-table">
+    <thead>
+      <tr>
+        <th >Coupon</th>
+        <th >New Rate</th>
+        <th >Current Rate</th>
+      </tr>
+    </thead>
+    <tbody id="DiscountTableBody" style="padding:10px;border:1px solid black;">
+      <!-- Data will be inserted here -->
+    </tbody>
+  </table>
+  <div id='warnDiscountchange'>
+    <div class="alert alert-danger" role="alert" style="color:black;font-weight:500;text-align:center;">
+               The Discount rates will be changed on confirmation.
+    </div>
+
+
+</div>
+</div>
+</div>

@@ -9,7 +9,7 @@ db = SQLAlchemy()
 
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__,template_folder=r'./templates')
     app.config.from_object(DBConfig)
     db.init_app(app)
     app.config['SESSION_SQLALCHEMY'] = db

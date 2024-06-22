@@ -598,13 +598,15 @@ def mark_visited():
 def index():
     return render_template("Home.html")
 
+static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+
 @app.get('/favicon.ico')
 def favicon():
-    return send_from_directory('./static','favicon.ico', mimetype='image/vnd.microsoft.icon')
+    return send_from_directory(static_folder,'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route('/favicon.png')
 def favicon_png():
-    return send_from_directory('./static', 'favicon.png', mimetype='image/png')
+    return send_from_directory(static_folder, 'favicon.png', mimetype='image/png')
 
 # -------------------------------------------------------------------------------------------------------------------
 # ---------------------------------admin only request--------------------------------------------------------------

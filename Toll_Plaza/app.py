@@ -617,7 +617,7 @@ def get_user(id):
     data=fetch_payment_data(id)
     if not data:
         return jsonify({"message":"No such Record Found!!"})
-    return jsonify(serialize(data,False))
+    return jsonify(serialize([data],False))
 
 if __name__ == "__main__":
     app.run(port=8000)

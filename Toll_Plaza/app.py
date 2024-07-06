@@ -476,8 +476,8 @@ def get_users():
 
 @app.route('/admins', methods=['GET'])
 def get_admins():
-    if not valid_user():
-        abort(401)
+    if not check_user(True):
+        return jsonify({'message':'Unauthorized Access!!'}),401
     admins = fetch_admins()
     return render_template('Delete_Admin.html', users=admins)
 
@@ -486,7 +486,7 @@ def get_admins():
 # Define a route to make new admins
 @app.route('/make_admin', methods=['POST'])
 def make_admins():
-    if not check_user():
+    if not check_user(True):
         return jsonify({"message": "Unauthorized Access"}), 401
    
     data = request.get_json()
@@ -501,7 +501,7 @@ def make_admins():
 # Define a route to delete admin privileges
 @app.route('/delete_admin', methods=['POST'])
 def delete_admin():
-    if not check_user():
+    if not check_user(True):
         return jsonify({"message": "Unauthorized Access"}), 401
 
     # Get the data from the POST request

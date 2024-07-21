@@ -233,7 +233,7 @@
 
 
     <!-- Login Modal -->
-<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+<div class="modal fade" data-bs-focus="false" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
     <div class="modal-dialog mx-auto" role="document" style="max-width: 500px;">
         <div class="modal-content mx-auto">
                <div class="modal-body mx-auto">
@@ -259,10 +259,12 @@
                             
                             </div>
                             
-                            <div class="text-center pt-1 mb-5 pb-1">
+                            <div class="text-center pt-1 mb-2 pb-1">
                             <button class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit" id="login">Login</button>
-                            <a class="text" id="Forgot_Pass" href="#" >Forgot password?</a>
+                            <a class="text" id="Forgot_Pass" href="#" >Forgot password?</a><br>
+                            <a class="text" id="Dummy" href="#" onclick="fill_dummy_data()" >Dummy login</a>
                             </div>
+                            
         
                             <div class="d-flex align-items-center justify-content-center pb-4">
                                 <p class="mb-0 me-2">Don't have an account?</p>
@@ -481,34 +483,46 @@
         <!-- Bootstrap core JS-->
         <!-- Core theme JS-->
         
-        <script>
-
+        <script defer="defer">
     // Function to show the signup modal
         function showSignupModal() {
-            $('#loginModal').modal('hide');
-            $('#signupModal').modal('show');
+            while(true){
+                try{
+                    $('#loginModal').modal('hide');
+                    $('#signupModal').modal('show');
+                    break;
+                }catch{
+                    continue;
+                }
+            }
         }
 
-        // Attach an event listener to the "Sign Up" link
-        document.getElementById('Sign_up').addEventListener('click', showSignupModal);
-
-        
         function showLoginModal() {
-    // Close the signup modal
-            $('#signupModal').modal('hide');
-            
-            // Open the login modal
-            $('#loginModal').modal('show');
+            while(true){
+                try{
+                    $('#signupModal').modal('hide');
+                    // Open the login modal
+                    $('#loginModal').modal('show');
+                    break;
+                }catch{
+                    continue;
+                }
+            } 
         }
-
-        document.getElementById('Login').addEventListener('click', showLoginModal);
-        
-        </script>
-<script>
+        // Attach an event listener to the "Sign Up" link and to "Login"
+        while(true){
+            try{
+                 document.getElementById('Login').addEventListener('click', showLoginModal);
+                 document.getElementById('Sign_up').addEventListener('click', showSignupModal);
+                 break;
+            }catch{
+                continue;
+            }
+        }
+       
+    
     function show_hide1(){
-        console.log('called');
         var element=document.getElementById("password");
-        console.log(element);
         var element_type=element.getAttribute("type");
         if(element_type=="password"){
             element.setAttribute("type","text");
@@ -545,20 +559,22 @@ async function register(username, password, email, mobile, gender) {
         if (response.status === 200) {
             const data = await response.json();
             console.log("Response from server:", data.message);
-            alert(data.message);
+            showInfo(data.message);
              showLoginModal();
         } else {
             const errorData = await response.json();
             console.error("Error:", errorData.message);
             // Show an error message to the user
-            alert(errorData.message);
+            showError(errorData.message);
         }
     } catch (error) {
         console.error("Error:", error);
         // Show a generic error message to the user
-        alert("An error occurred while registering.");
+        showError("An error occurred while registering.");
     }
 }
+
+
 
     function check_pass(){
        
@@ -600,7 +616,7 @@ async function register(username, password, email, mobile, gender) {
                 if (responseData.code=== 200) {
                    window.location.href='/profile';
                 }else {
-                    alert(responseData.message);
+                    showInfo(responseData.message);
                 }
             } catch (error) {
                 console.error("There was a problem with the fetch operation:", error);
@@ -652,12 +668,12 @@ $("#registrationNumber").on("input", function() {
         var gender = document.getElementById("gender").value; // New field
 
         if (password != confirm_password) {
-            alert("Passwords do not match!.");
+            showError("Passwords do not match!.");
             return;
         }
 
         if(username.length>40 || username.length<4){
-            alert("Name can have minimum of 4 and maximum of 40 characters.");
+            showError("Name can have minimum of 4 and maximum of 40 characters.");
             return;
         }
         await register(username,password, email,mobile,gender);
@@ -676,10 +692,19 @@ $("#registrationNumber").on("input", function() {
    document.getElementById("Forgot_Pass").addEventListener("click", async function () {
     var Provided;
     var email = document.getElementById("login_email").value;
-    if (email) {
+    if (email && ValidateEmail(email)) {
         Provided = email;
     } else {
-        Provided = window.prompt("Enter Your Email to Reset your password:");
+        //Provided =await getAnswer("Enter Your Email to Reset your password:","Reset");
+        const { value: email } = await Swal.fire({
+            title: "Input email address",
+            input: "email",
+            inputLabel: "Your email address",
+            inputPlaceholder: "Enter your email address",
+            showCancelButton:true,
+            reverseButtons:true,
+            });
+            Provided=email;
     }
 
     var errorMessage;
@@ -699,13 +724,13 @@ $("#registrationNumber").on("input", function() {
             });
 
             if (response.status === 200) {
-                alert("Password reset email sent. Check your inbox.");
+                showConfirmSuccess("Password reset email sent. Check your inbox.");
             } else {
                 const responseData = await response.json();
-                alert("Error: " + responseData.message);
+                showError(responseData.message);
             }
         } else {
-            alert("Enter a valid Email.");
+            showError("Enter a valid Email.");
         }
     }
 });
@@ -717,13 +742,13 @@ $("#registrationNumber").on("input", function() {
 
         // Check if email and password are not empty
         if (!email || !password) {
-            alert("Email and password are required.");
+            showError("Email and password are required.");
             return;
         }
 
         // Validate email format
         if (!await ValidateEmail(email)) {
-            alert("Enter a valid email address.");
+            showError("Enter a valid email address.");
             return;
         }
 
@@ -732,6 +757,19 @@ $("#registrationNumber").on("input", function() {
     });
 // ----- End
 
+async function fill_dummy_data(){
+    try{
+        let res=await showConfirmation("You are about to login to Dummy user account!");
+        if(res){
+            document.getElementById("login_email").value="dummy@gmail.com";
+            document.getElementById("login_password").value='123456';
+            document.getElementById("login").click();
+        }
+    }catch{
+        null;
+    }
+   
+}
 
 </script>
 

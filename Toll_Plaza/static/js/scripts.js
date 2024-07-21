@@ -327,7 +327,7 @@ async function logout() {
     if (response.status === 200 && response.redirected) {
       window.location.href = response.url;
     } else {
-      alert("Log Out failed.");
+      showError("Log Out failed.");
     }
   }
 }
@@ -336,7 +336,7 @@ function validateMobile() {
   var mobileInput = document.getElementById("mobile") || document.getElementById("editMobile");
   var mobileValue = mobileInput.value;
   if (mobileValue.length > 0 && mobileValue.length < 12 && mobileValue.length!=10) {
-    alert("Provide a 10/12 digit mobile number!");
+    showError("Provide a 10/12 digit mobile number!");
     mobileInput.value = "";
     return false;
   }
@@ -345,7 +345,7 @@ function validateMobile() {
 
 
   if (mobileValue.length > 0 && !mobileRegex.test(mobileValue)) {
-    alert("Invalid mobile number format.Use 10/12 digits Only");
+    showError("Invalid mobile number format.Use 10/12 digits Only");
     mobileInput.value = "";
     return false;
   }
@@ -521,9 +521,9 @@ function submitContactForm() {
 }
 
 function ValidateEmail(input) {
+  if(input==undefined || input==null) return false;
   var validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-
-  return input.match(validRegex) != null;
+  return String(input).match(validRegex) != null;
 }
 
 

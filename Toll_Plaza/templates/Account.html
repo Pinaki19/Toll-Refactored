@@ -628,16 +628,21 @@ function fillModalBody(transactionData,email) {
 
 
     async function confirm_logout(){
-        var result=confirm('You are about to log-out!');
+      try{
+        let result=await showConfirmation('You are about to log-out!');
         if (result){
             let response=await fetch('/Log_out');
             // Handle the response as needed
             if (response.status === 200 && response.redirected) {
-                window.location.href=response.url;
+                window.location.href='/';
             } else {
-                alert("Log Out failed.");
+                showError("Log Out failed. try again!");
             }
         }
+      }catch{
+        null;
+      }
+        
     }
 
 function editProfile() {
@@ -753,12 +758,12 @@ function Save_data() {
 
 
   if(editedName.length<4 || editedName.length>40){
-    alert("Name can have minimum of 4 and maximum of 40 characters.");
+    showInfo("Name can have minimum of 4 and maximum of 40 characters.");
     return;
   }
 
   if (editedAddress.length > 100){
-    alert("Address can have maximum of 100 characters.");
+    showInfo("Address can have maximum of 100 characters.");
     return;
   }
 
@@ -828,10 +833,10 @@ imageUploadInput.addEventListener("change", function () {
 
                 saveProfileImage(file);
             } else {
-                alert("Please select a valid image file.");
+                showError("Please select a valid image file.");
             }
         } else {
-            alert("File size exceeds the allowed limit (10 MB).");
+            showError("File size exceeds the allowed limit (10 MB).");
         }
     }
 });
@@ -841,7 +846,7 @@ function saveProfileImage(imageFile) {
     console.log(imageFile);
     
     if (!imageFile) {
-        alert("Please select an image file.");
+        showError("Please select an image file.");
         return;
     }
 
@@ -859,23 +864,22 @@ function saveProfileImage(imageFile) {
     })
     .then(function(data) {
         if (data.success) {
-            // Image uploaded successfully, you can update the UI or show a success message
-            //alert("Image uploaded successfully!");
-            //location.reload(); // Refresh the page or update the profile image element
+            showConfirmSuccess("Image upload successful.")
         } else {
             // Handle the case where the upload failed
-            alert("Image upload failed: " + data.message);
+            showError("Image upload failed: " + data.message);
         }
     })
     .catch(function(error) {
         // Handle any errors that occur during the fetch
+        showError("Image upload failed, try again!");
         console.error("Image upload error:", error);
     });
 }
 
 
-function Remove_Dp(){
-  let result=confirm("You are about to Remove your Profile picture.")
+async function Remove_Dp(){
+  let result=await showConfirmation("You are about to Remove your Profile picture.")
   if(!result){
     return;
   }
@@ -891,6 +895,7 @@ function Remove_Dp(){
     .catch(function(error) {
         // Handle any errors that occur during the fetch
         console.error("Profile picture removal error:", error);
+        showError("Unable to remove! try again..");
     });
 
 }

@@ -1,4 +1,14 @@
 var jsonData; //Stores the toll rates data
+var dict = {
+  messages: expandMessagesDropdown,
+  notifications: expandMessagesDropdown,
+  query: expandMessagesDropdown,
+  home:Go_home,
+  profile:Go_profile,
+  login:Go_Login,
+  help: expandMessagesDropdown,
+  logout:Logout,
+};
 
 async function getEmail() {
   return new Promise(async (resolve, reject) => {
@@ -7,10 +17,13 @@ async function getEmail() {
       if (response.ok) {
         let data = await response.json();
         resolve(data.message);
+        delete dict['login'];
       } else {
         reject(null);
+        delete dict['logout'];
       }
     } catch (error) {
+      delete dict['logout'];
       reject(null);
     }
   });
@@ -48,16 +61,7 @@ async function check_login(){
 }
 
 
-var dict = {
-  messages: expandMessagesDropdown,
-  notifications: expandMessagesDropdown,
-  query: expandMessagesDropdown,
-  home:Go_home,
-  profile:Go_profile,
-  login:Go_Login,
-  help: expandMessagesDropdown,
-  logout:Logout,
-};
+
 
 function suggest() {
   var searched = $('#Search_bar').val().trim();
@@ -320,15 +324,20 @@ function Logout(){
 }
 
 async function logout() {
-  var result = confirm('You are about to log-out!');
-  if (result) {
-    let response = await fetch('/Log_out');
-    // Handle the response as needed
-    if (response.status === 200 && response.redirected) {
-      window.location.href = response.url;
-    } else {
-      showError("Log Out failed.");
+  try{
+      var result =await showConfirmation('You are about to log-out!');
+    if (result) {
+      let response = await fetch('/Log_out');
+      // Handle the response as needed
+      if (response.status === 200 && response.redirected) {
+        window.location.href = '/';
+      } else {
+        showError("Log out failed. try again!");
+      }
     }
+  }catch{
+    showError("Log out failed. try again!");
+    null;
   }
 }
 

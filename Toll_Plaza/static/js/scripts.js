@@ -360,7 +360,10 @@ function get_cupons() {
     .then(data => {
       if (data.data && data.data.length > 0) {
         const coupons = data.data;
-        const globalCoupon = coupons.find(coupon => coupon.name.toLowerCase() === 'global');
+        if(data.data.length==1){
+          showCuponsDiv.textContent = "No coupons available currently...";
+        }else{
+          const globalCoupon = coupons.find(coupon => coupon.name.toLowerCase() === 'global');
         const otherCoupons = coupons.filter(coupon => coupon.name.toLowerCase() !== 'global');
         if(globalCoupon && globalCoupon.rate){
           const discountRate = globalCoupon.rate; // Replace with the actual field name
@@ -382,6 +385,8 @@ function get_cupons() {
 
         // Join the formatted coupon strings with commas and set as text content
         showCuponsDiv.textContent = 'Coupons available: ' + formattedCoupons.join(' | ');
+        }
+        
       } else {
         // Handle the case where there are no coupons
         showCuponsDiv.textContent = "No coupons available currently...";
@@ -397,23 +402,28 @@ function get_cupons() {
 
 
 async function fetchTollRate() {
-  try {
-    // Fetch the toll rate
-    const tollResponse = await fetch('/get_toll_rate');
-
-    // Check if the response status is OK (200)
-    if (tollResponse.status === 200) {
-      // Parse the JSON response for toll rates
-      jsonData = await tollResponse.json();
-    } else {
-      // Handle the error or return a default value for toll rates
-      throw new Error('Failed to fetch toll rate data');
-    }
-    get_cupons();
-  } catch (error) {
-    // Handle any errors that occurred during the fetch
-    console.error(error);
-  } 
+  var c=5000;
+  while(c--){
+    try {
+      // Fetch the toll rate
+      const tollResponse = await fetch('/get_toll_rate');
+  
+      // Check if the response status is OK (200)
+      if (tollResponse.status === 200) {
+        // Parse the JSON response for toll rates
+        jsonData = await tollResponse.json();
+      } else {
+        // Handle the error or return a default value for toll rates
+        throw new Error('Failed to fetch toll rate data');
+      }
+      get_cupons();
+      break;
+    } catch (error) {
+      // Handle any errors that occurred during the fetch
+      continue;
+    } 
+  }
+ 
 }
 
 // Function to calculate the discounted amount
@@ -510,7 +520,6 @@ function submitContactForm() {
                 ${response.message} <br> Unregistered user queries will be resolved via mail.
             </div>`;
       setTimeout(function () { $('#ContactModal').modal('hide'); }, 4000);
-
     },
     error: function (error) {
       document.getElementById("Reply1").innerHTML = `<div class="alert alert-danger" role="alert" style="color:black;font-weight:500;text-align:center;">

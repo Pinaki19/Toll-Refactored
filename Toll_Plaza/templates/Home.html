@@ -486,7 +486,8 @@
         <script defer="defer">
     // Function to show the signup modal
         function showSignupModal() {
-            while(true){
+            var c=1000;
+            while(c--){
                 try{
                     $('#loginModal').modal('hide');
                     $('#signupModal').modal('show');
@@ -498,7 +499,8 @@
         }
 
         function showLoginModal() {
-            while(true){
+            var c=1000;
+            while(c--){
                 try{
                     $('#signupModal').modal('hide');
                     // Open the login modal
@@ -616,7 +618,10 @@ async function register(username, password, email, mobile, gender) {
                 if (responseData.code=== 200) {
                    window.location.href='/profile';
                 }else {
-                    showInfo(responseData.message);
+                    if(responseData.code=== 1){
+                        location.href='/suspended';
+                    }else
+                        showInfo(responseData.message);
                 }
             } catch (error) {
                 console.error("There was a problem with the fetch operation:", error);

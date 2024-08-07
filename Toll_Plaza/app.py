@@ -131,7 +131,8 @@ def login():
         return jsonify({'code': 404, 'message': 'User not Found! Sign Up instead'}), 404
 
     if user.suspended:
-        return jsonify({'code': 401, 'message': 'User Account is Suspended. Contact Us for more Info.'}), 401
+        session['suspended']=True
+        return jsonify({'code': 1, 'message': 'User suspended!'}), 1
 
     result, message, code = sign_in_with_mail(email, password)
     if result:
@@ -208,6 +209,16 @@ def Logout():
   return redirect(url_for('index'))
 
 
+@app.get('/suspended')
+def show_suspended():
+    if 'suspended' not in session:
+        return redirect(url_for('index'))
+    session.pop('suspended',None)
+    return render_template('Error.html',Title="OH NO! Account suspended!", Code=401,\
+            Message="You can contact us to get more detail on this matter.\
+                To contact us, use Help -> Contact Us from the Home page.\
+                    Make sure to use the Email associated with your account when you contact us."),404
+
 @app.route('/profile', methods=['GET'])
 def profile():
     if 'email' in session:
@@ -217,7 +228,8 @@ def profile():
             delete_session()
             abort(404)
         if user.suspended:
-            return jsonify({'code': 401, 'message': 'User Account is Suspended. Contact Us for more Info.'}), 401
+            session['suspended']=True
+            return show_suspended()
         if user:
             # Render the profile template with user data
             return render_template('Account.html', user=user,wallet=wallet)
@@ -226,7 +238,6 @@ def profile():
     else:
         print("session empty")
         return redirect(url_for('index'))
-
 
 
 @app.route('/Check_login', methods=['GET'])
@@ -618,6 +629,13 @@ def get_user(id):
     if not data:
         return jsonify({"message":"No such Record Found!!"})
     return jsonify(serialize([data],False))
+
+#Custom error handler
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('Error.html',Title="UH OH! You seem lost.",Code=404,Message="The page you are looking for does not exist.\
+          How you got here is a mystery. But you can click the button below\
+          to go back to the homepage."), 404
 
 if __name__ == "__main__":
     app.run(port=8000)

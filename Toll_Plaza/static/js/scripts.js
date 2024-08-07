@@ -367,17 +367,14 @@ function get_cupons() {
   fetch('/get_cupons')
     .then(response => response.json())
     .then(data => {
+      const coupons = data.data;
       if (data.data && data.data.length > 0) {
-        const coupons = data.data;
-        if(data.data.length==1){
-          showCuponsDiv.textContent = "No coupons available currently...";
-        }else{
-          const globalCoupon = coupons.find(coupon => coupon.name.toLowerCase() === 'global');
-        const otherCoupons = coupons.filter(coupon => coupon.name.toLowerCase() !== 'global');
-        if(globalCoupon && globalCoupon.rate){
-          const discountRate = globalCoupon.rate; // Replace with the actual field name
+        const globalCoupon = coupons.find(coupon => coupon.name.toLowerCase() === 'global');
+        const discountRate = globalCoupon.rate; 
+        if(discountRate>0)
           document.getElementById("Discounts").innerText = `Discounts applied: ${discountRate} %`;
-
+        if(globalCoupon && globalCoupon.rate){
+          // Replace with the actual field name
           for (const vehicleType in jsonData) {
             const journeyTypes = jsonData[vehicleType];
             for (const journeyType in journeyTypes) {
@@ -387,6 +384,10 @@ function get_cupons() {
             }
           }
         }
+        if(data.data.length==1){
+          showCuponsDiv.textContent = "No coupons available currently...";
+        }else{
+        const otherCoupons = coupons.filter(coupon => coupon.name.toLowerCase() !== 'global');
         // Map the other coupon data to formatted strings
         const formattedCoupons = otherCoupons.map(coupon => {
           return `${coupon.name.charAt(0).toUpperCase() + coupon.name.slice(1)} - ${coupon.rate}%`;

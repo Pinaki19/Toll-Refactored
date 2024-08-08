@@ -132,7 +132,7 @@ def login():
 
     if user.suspended:
         session['suspended']=True
-        return jsonify({'code': 1, 'message': 'User suspended!'}), 1
+        return jsonify({'code': 401, 'message': 'User suspended!'}), 401
 
     result, message, code = sign_in_with_mail(email, password)
     if result:

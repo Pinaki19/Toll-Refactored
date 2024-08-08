@@ -13,6 +13,7 @@ import os
 from PIL import Image
 import io
 from werkzeug.utils import secure_filename
+from random import randint
 
 
 def extract_file_path_from_url(url):
@@ -102,20 +103,29 @@ def upload_to_bucket(file, supabase,user_id:uuid) -> bool:
         if len(image_data) == 0:
             print('empty compression')
             return False
-        
-        response = supabase.storage.from_(bucket_name).upload(
-            upload_path, image_data, {"content-type": file.mimetype}
-        )
-        # Check if upload was successful
-        if response.status_code == 200:
-            return update_user_pic_url('https://rcikbpsmkgltabgfmcpd.supabase.co/storage/v1/object/public/profile-pics/'\
-                +upload_path,user_id,False,supabase)
-        return False
+        extra_name=""
+        while True:
+            try:
+                all=upload_path.split('.')
+                extension=all[-1] if len(all)>1 else None
+                name=''.join(all[:-1])+extra_name+ ('.'+extension) if extension else ''
+                print(name)
+                response = supabase.storage.from_(bucket_name).upload(
+                    name, image_data, {"content-type": file.mimetype}
+                )
+                # Check if upload was successful
+                if response.status_code == 200:
+                    update_user_pic_url('https://rcikbpsmkgltabgfmcpd.supabase.co/storage/v1/object/public/profile-pics/'\
+                        +name,user_id,False,supabase)
+                    return True
+            except Exception as e:
+                error_message = str(e)
+                if 'Duplicate' in error_message:
+                    extra_name= str(randint(999,1999991991))
+                    continue
+                return False
     except Exception as e:
         error_message = str(e)
-        if 'Duplicate' in error_message:
-            return update_user_pic_url('https://rcikbpsmkgltabgfmcpd.supabase.co/storage/v1/object/public/profile-pics/'\
-                +upload_path,user_id,False,supabase)
         return False
    
    

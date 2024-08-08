@@ -69,11 +69,7 @@ async function Check_and_apply() {
 
                 if (responseData.success) {
                     // Coupon applied successfully
-                    const PaymentInfo = responseData.Data;
-                    const formattedCupon = formatToTwoDecimalPlaces(PaymentInfo.coupon_disc);
-                    const formattedTotal = formatToTwoDecimalPlaces(PaymentInfo.amount + PaymentInfo.gst_applied - PaymentInfo.coupon_disc - PaymentInfo.global_disc);
-                    document.getElementById("paymentInfoCupon").innerHTML = `&#8377;${formattedCupon}`;
-                    document.getElementById("paymentInfoTotal").innerHTML = `&#8377;${formattedTotal}`;
+                    location.reload();
                 } else {
                     // Handle the case where coupon application was not successful
                     console.error('Coupon application failed');

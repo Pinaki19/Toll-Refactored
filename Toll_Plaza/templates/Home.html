@@ -618,12 +618,15 @@ async function register(username, password, email, mobile, gender) {
                 if (responseData.code=== 200) {
                    window.location.href='/profile';
                 }else {
-                    if(responseData.code=== 1){
+                    if(responseData.code=== 401){
                         location.href='/suspended';
                     }else
                         showInfo(responseData.message);
                 }
             } catch (error) {
+                if(responseData.code=== 401){
+                    location.href='/suspended';
+                }
                 console.error("There was a problem with the fetch operation:", error);
             }
     }

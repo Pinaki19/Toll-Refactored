@@ -485,32 +485,43 @@
         
         <script defer="defer">
     // Function to show the signup modal
-        function showSignupModal() {
-            var c=1000;
-            while(c--){
-                try{
-                    $('#loginModal').modal('hide');
-                    $('#signupModal').modal('show');
-                    break;
-                }catch{
-                    continue;
+    function showSignupModal() {
+        var c = 1000;
+        
+        function attemptShowSignup() {
+            try {
+                $('#loginModal').modal('hide');
+                $('#signupModal').modal('show');
+            } catch (e) {
+                if (c > 0) {
+                    c--;
+                    setTimeout(attemptShowSignup, 20);
                 }
             }
         }
+    
+        attemptShowSignup();
+    }
 
-        function showLoginModal() {
-            var c=1000;
-            while(c--){
-                try{
-                    $('#signupModal').modal('hide');
-                    // Open the login modal
-                    $('#loginModal').modal('show');
-                    break;
-                }catch{
-                    continue;
+    function showLoginModal() {
+        var c = 1000;
+        
+        function attemptShowLogin() {
+            try {
+                $('#signupModal').modal('hide');
+                // Open the login modal
+                $('#loginModal').modal('show');
+            } catch (e) {
+                if (c > 0) {
+                    c--;
+                    setTimeout(attemptShowLogin, 20);
                 }
-            } 
+            }
         }
+    
+        attemptShowLogin();
+    }
+    
         // Attach an event listener to the "Sign Up" link and to "Login"
         while(true){
             try{
